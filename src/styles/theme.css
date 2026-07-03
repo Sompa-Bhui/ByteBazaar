@@ -1,0 +1,14 @@
+:root {
+  --bg: #ffffff;
+  --fg: #0f172a;
+}
+
+.dark {
+  --bg: #0b1220;
+  --fg: #e6eef8;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+}

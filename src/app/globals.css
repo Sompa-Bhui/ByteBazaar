@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #ffffff;
+  --muted: #6b7280;
+}
+
+.dark {
+  --bg: #0b0f19;
+  --muted: #9ca3af;
+}
+
+html, body, #__next {
+  height: 100%;
+  background-color: var(--bg);
+}
+
+.container { @apply max-w-7xl mx-auto px-4; }

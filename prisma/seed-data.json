@@ -1,0 +1,18 @@
+{
+  "categories": [
+    { "id": "cat-standup", "name": "Standup", "slug": "standup", "description": "Standing desks and accessories" },
+    { "id": "cat-monitor", "name": "Monitors", "slug": "monitors", "description": "Developer monitors and arms" }
+  ],
+  "brands": [
+    { "id": "brand-ergotech", "name": "ErgoTech", "slug": "ergotech", "website": "https://ergotech.example" },
+    { "id": "brand-viewmax", "name": "ViewMax", "slug": "viewmax", "website": "https://viewmax.example" }
+  ],
+  "products": [
+    { "id": "prod-standing-1", "title": "Pro Standing Desk", "slug": "pro-standing-desk", "shortDesc": "Height adjustable desk", "price": 24999, "brandId": "brand-ergotech" },
+    { "id": "prod-monitor-1", "title": "UltraWide 34", "slug": "ultrawide-34", "shortDesc": "34-inch ultrawide monitor", "price": 39999, "brandId": "brand-viewmax" }
+  ],
+  "variants": [
+    { "id": "var-desk-black", "productId": "prod-standing-1", "title": "Black / 160cm", "sku": "DESK-BLK-160", "price": 24999 },
+    { "id": "var-monitor-34", "productId": "prod-monitor-1", "title": "34in Curved", "sku": "MON-34-CRV", "price": 39999 }
+  ]
+}
