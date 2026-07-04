@@ -1,17 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import cloudinary from '@/lib/cloudinary';
 
-export async function GET(req: Request, context: { params: Record<string, string> }) {
-  const params = context.params;
-  const productId = params.productId;
+export async function GET(req: Request, context: { params: Promise<Record<string, string>> }) {
+  const { productId } = await context.params;
   const images = await prisma.productImage.findMany({ where: { productId }, orderBy: { position: 'asc' } });
   return NextResponse.json(images);
 }
 
-export async function POST(req: Request, context: { params: Record<string, string> }) {
+export async function POST(req: Request, context: { params: Promise<Record<string, string>> }) {
   try {
-    const productId = context.params.productId;
+    const { productId } = await context.params;
     const body = await req.json();
     type IncomingImage = { url: string; publicId?: string; altText?: string; variantId?: string };
     const images: IncomingImage[] = body.images || [];
@@ -33,10 +31,9 @@ export async function POST(req: Request, context: { params: Record<string, strin
   }
 }
 
-export async function PATCH(req: Request, context: { params: Record<string, string> }) {
+export async function PATCH(req: Request) {
   // used for reorder: body = { order: [id1, id2, ...] }
   try {
-    const productId = context.params.productId;
     const body = await req.json();
     const order: string[] = body.order || [];
     await Promise.all(order.map((id, idx) => prisma.productImage.update({ where: { id }, data: { position: idx } })));

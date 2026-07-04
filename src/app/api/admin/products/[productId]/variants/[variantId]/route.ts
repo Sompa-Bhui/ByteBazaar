@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { generateSKU } from '@/lib/sku';
 
 const patchSchema = z.object({
   title: z.string().min(1).optional(),
@@ -12,18 +12,18 @@ const patchSchema = z.object({
   inventory: z.object({ quantityOnHand: z.number().int().nonnegative().optional(), safetyStock: z.number().int().nonnegative().optional(), location: z.string().optional() }).optional(),
 });
 
-export async function GET(req: Request, context: { params: Record<string, string> }) {
-  const params = context.params;
+export async function GET(req: Request, context: { params: Promise<Record<string, string>> }) {
+  const params = await context.params;
   const v = await prisma.productVariant.findUnique({ where: { id: params.variantId }, include: { inventory: true, product: true, images: true } });
   if (!v) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json(v);
 }
 
-export async function PATCH(req: Request, context: { params: Record<string, string> }) {
+export async function PATCH(req: Request, context: { params: Promise<Record<string, string>> }) {
   try {
     const parsed = patchSchema.parse(await req.json());
     const { title, price, sku, attributes, images, inventory } = parsed;
-    const id = context.params.variantId;
+    const { variantId: id } = await context.params;
 
     // If SKU provided, ensure unique
     if (sku) {
@@ -31,7 +31,7 @@ export async function PATCH(req: Request, context: { params: Record<string, stri
       if (exists && exists.id !== id) return NextResponse.json({ error: 'SKU already exists' }, { status: 400 });
     }
 
-    const updated = await prisma.productVariant.update({ where: { id }, data: { title, price, sku, attributes } });
+    const updated = await prisma.productVariant.update({ where: { id }, data: { title, price, sku, attributes: attributes as Prisma.InputJsonValue } });
 
     if (inventory) {
       const inv = await prisma.inventory.findUnique({ where: { variantId: id } });
@@ -54,9 +54,9 @@ export async function PATCH(req: Request, context: { params: Record<string, stri
   }
 }
 
-export async function DELETE(req: Request, context: { params: Record<string, string> }) {
+export async function DELETE(req: Request, context: { params: Promise<Record<string, string>> }) {
   try {
-    const id = context.params.variantId;
+    const { variantId: id } = await context.params;
     // delete inventory
     await prisma.inventory.deleteMany({ where: { variantId: id } });
     // detach images

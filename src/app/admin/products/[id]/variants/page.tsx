@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma';
 
 export const revalidate = 0;
 
-export default async function VariantsPage({ params }: { params: { id: string } }) {
-  const productId = params.id;
+export default async function VariantsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: productId } = await params;
   const variants = await prisma.productVariant.findMany({ where: { productId }, include: { inventory: true }, orderBy: { createdAt: 'desc' } });
 
   return (

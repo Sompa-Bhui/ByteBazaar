@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { Badge } from './ui/Badge';
 import { Card, CardBody } from './ui/Cards';
 import { Button } from './ui/Button';
@@ -19,9 +18,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   return (
     <Card className="group">
       <Link href={`/products/${product.slug}`} className="block overflow-hidden rounded-3xl bg-slate-100">
-        <motion.img
-          whileHover={{ scale: 1.03 }}
-          transition={{ duration: 0.3 }}
+        <img
           src={product.image}
           alt={product.title}
           className="h-72 w-full object-cover"

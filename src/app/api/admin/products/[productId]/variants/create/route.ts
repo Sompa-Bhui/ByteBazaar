@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { generateSKU } from '@/lib/sku';
@@ -12,9 +13,9 @@ const bodySchema = z.object({
   inventory: z.object({ quantityOnHand: z.number().int().nonnegative().optional(), safetyStock: z.number().int().nonnegative().optional(), location: z.string().optional() }).optional(),
 });
 
-export async function POST(req: Request, context: { params: Record<string, string> }) {
+export async function POST(req: Request, context: { params: Promise<Record<string, string>> }) {
   try {
-    const productId = context.params.productId;
+    const { productId } = await context.params;
     const parsed = bodySchema.parse(await req.json());
     const { title, price, sku, attributes, images, inventory } = parsed;
 
@@ -39,7 +40,7 @@ export async function POST(req: Request, context: { params: Record<string, strin
         title,
         price,
         sku: finalSku,
-        attributes: attributes ? attributes : undefined,
+        attributes: attributes ? (attributes as Prisma.InputJsonValue) : undefined,
         inventory: inventory ? { create: { quantityOnHand: inventory.quantityOnHand ?? 0, safetyStock: inventory.safetyStock ?? 0, location: inventory.location } } : undefined,
         images: images ? { create: images.map((img, idx: number) => ({ url: img.url, altText: img.altText, position: idx, productId })) } : undefined,
       },

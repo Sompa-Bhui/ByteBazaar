@@ -7,32 +7,28 @@ import { prisma } from '@/lib/prisma';
 export default async function ProfilePage() {
   let userId: string | null = null;
   try {
-    const auth = getAuth({ headers: headers(), cookies: cookies() } as unknown as Request);
+    const auth = getAuth({ headers: headers(), cookies: cookies() } as unknown as Parameters<typeof getAuth>[0]);
     userId = auth.userId ?? null;
-  } catch (e) {
-    // Clerk may require middleware; fallback to redirect to sign-in
+  } catch {
     return redirect('/sign-in');
   }
   if (!userId) redirect('/sign-in');
 
-  // Sync user to DB
   const dbUser = await upsertUserFromClerk(userId);
-
-  const orders = await prisma.order.findMany({ where: { userId: dbUser?.id } });
+  const orders = await prisma.order.findMany({ where: { userId: dbUser?.id ?? '' } });
 
   return (
     <div className="container py-12">
-      <div className="max-w-3xl mx-auto">
+      <div className="mx-auto max-w-3xl">
         <h1 className="text-2xl font-semibold">My Profile</h1>
         <div className="mt-6">
           <div className="flex items-center gap-4">
-            <img src={dbUser?.avatarUrl ?? '/placeholder-avatar.png'} alt="avatar" className="w-20 h-20 rounded-full" />
+            <img src={dbUser?.avatarUrl ?? '/placeholder-avatar.png'} alt="avatar" className="h-20 w-20 rounded-full" />
             <div>
               <div className="text-lg font-medium">{dbUser?.name ?? dbUser?.email}</div>
               <div className="text-sm text-muted-foreground">{dbUser?.email}</div>
             </div>
           </div>
-
           <section className="mt-8">
             <h2 className="font-medium">Orders</h2>
             <div className="mt-4">
@@ -41,7 +37,9 @@ export default async function ProfilePage() {
               ) : (
                 <ul>
                   {orders.map((o) => (
-                    <li key={o.id} className="py-2 border-b">Order {o.id} — Total: ₹{o.total}</li>
+                    <li key={o.id} className="border-b py-2">
+                      Order {o.id} - Total: ₹{o.total}
+                    </li>
                   ))}
                 </ul>
               )}

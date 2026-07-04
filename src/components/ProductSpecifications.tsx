@@ -4,7 +4,7 @@ import type { StorefrontProductDetail } from '@/lib/storefront';
 
 export default function ProductSpecifications({ product }: { product: StorefrontProductDetail }) {
   const sku = product.variants[0]?.sku ?? 'N/A';
-  const availability = product.variants.some((variant) => variant.inventory?.quantityOnHand ?? 0 > 0) ? 'In stock' : 'Out of stock';
+  const availability = product.variants.some((variant) => (variant.inventory?.quantityOnHand ?? 0) > 0) ? 'In stock' : 'Out of stock';
   const categories = product.categories.map((category) => category.name).join(', ');
 
   return (

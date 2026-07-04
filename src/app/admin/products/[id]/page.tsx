@@ -1,8 +1,8 @@
 import ProductForm from '@/components/admin/ProductForm';
 import { prisma } from '@/lib/prisma';
 
-export default async function EditProduct({ params }: { params: { id: string } }) {
-  const id = params.id;
+export default async function EditProduct({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const product = await prisma.product.findUnique({ where: { id }, include: { variants: true, images: true } });
   if (!product) return <div>Not found</div>;
 

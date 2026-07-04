@@ -6,9 +6,9 @@ export async function POST(req: Request) {
   try {
     let userId: string | null = null;
     try {
-      const auth = getAuth(req as unknown as Request);
+      const auth = getAuth(req as Parameters<typeof getAuth>[0]);
       userId = auth.userId ?? null;
-    } catch (_e) {
+    } catch {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
     if (!userId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     const { bio, avatarUrl } = body;
 
     // Update Prisma
-    const user = await prisma.user.updateMany({ where: { clerkId: userId }, data: { bio, avatarUrl } });
+    await prisma.user.updateMany({ where: { clerkId: userId }, data: { bio, avatarUrl } });
 
     // Update Clerk public profile (profileImageUrl cannot be set here in all plans)
     try {
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
         const client = await clerkClient();
         await client.users.updateUser(userId, updates as unknown as Record<string, unknown>);
       }
-    } catch (_e) {
+    } catch {
       // ignore clerk update failures
     }
     return NextResponse.json({ ok: true });

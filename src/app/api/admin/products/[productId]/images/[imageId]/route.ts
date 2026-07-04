@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import cloudinary from '@/lib/cloudinary';
 
-export async function DELETE(req: Request, context: { params: Record<string, string> }) {
+export async function DELETE(req: Request, context: { params: Promise<Record<string, string>> }) {
   try {
-    const { productId, imageId } = context.params;
+    const { imageId } = await context.params;
     const img = await prisma.productImage.findUnique({ where: { id: imageId } });
     if (!img) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     if (img.publicId) {
-      try { await cloudinary.uploader.destroy(img.publicId); } catch (_err) { /* ignore */ }
+      try { await cloudinary.uploader.destroy(img.publicId); } catch { /* ignore */ }
     }
 
     await prisma.productImage.delete({ where: { id: imageId } });
@@ -24,10 +24,10 @@ export async function DELETE(req: Request, context: { params: Record<string, str
   }
 }
 
-export async function PATCH(req: Request, context: { params: Record<string, string> }) {
+export async function PATCH(req: Request, context: { params: Promise<Record<string, string>> }) {
   // update altText or set as cover: { altText?, setCover?: boolean, variantCover?: boolean }
   try {
-    const { productId, imageId } = context.params;
+    const { productId, imageId } = await context.params;
     const body = await req.json();
     const { altText, setCover, variantId } = body as { altText?: string; setCover?: boolean; variantId?: string };
 

@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Button } from './ui/Button';
 
@@ -65,7 +64,7 @@ export default function StorefrontHeader() {
         </div>
       </div>
       {mobileOpen ? (
-        <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 md:hidden">
+        <div className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 md:hidden">
           <div className="container mx-auto space-y-3 p-4">
             {menuItems.map((item) => (
               <Link key={item.label} href={item.href} className="block rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900">
@@ -78,7 +77,7 @@ export default function StorefrontHeader() {
               </Link>
             ))}
           </div>
-        </motion.div>
+        </div>
       ) : null}
     </header>
   );

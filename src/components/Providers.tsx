@@ -10,11 +10,9 @@ export default function Providers({ children }: { children: ReactNode }) {
     if (theme === 'dark') root.classList.add('dark');
   }, []);
 
-  return (
-    <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-    >
-      {children}
-    </ClerkProvider>
-  );
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+  if (!publishableKey) return <>{children}</>;
+
+  return <ClerkProvider publishableKey={publishableKey}>{children}</ClerkProvider>;
 }

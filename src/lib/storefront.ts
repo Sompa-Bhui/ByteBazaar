@@ -134,18 +134,23 @@ function mapProduct(item: ProductWithRelations): StorefrontProduct {
 }
 
 export async function getProductFilters() {
-  const [brands, categories] = await Promise.all([
-    prisma.brand.findMany({ orderBy: { name: 'asc' } }),
-    prisma.category.findMany({ orderBy: { name: 'asc' } }),
-  ]);
+  try {
+    const [brands, categories] = await Promise.all([
+      prisma.brand.findMany({ orderBy: { name: 'asc' } }),
+      prisma.category.findMany({ orderBy: { name: 'asc' } }),
+    ]);
 
-  return {
-    brands: brands.map((brand) => ({ label: brand.name, value: brand.slug })),
-    categories: categories.map((category) => ({ label: category.name, value: category.slug })),
-  };
+    return {
+      brands: brands.map((brand) => ({ label: brand.name, value: brand.slug })),
+      categories: categories.map((category) => ({ label: category.name, value: category.slug })),
+    };
+  } catch {
+    return { brands: [], categories: [] };
+  }
 }
 
 export async function searchProducts(params: StorefrontSearchParams) {
+  try {
   const page = Math.max(1, Number.parseInt(params.page ?? '1', 10) || 1);
   const pageSize = PRODUCT_PAGE_SIZE;
   const where = buildProductWhere(params);
@@ -168,33 +173,44 @@ export async function searchProducts(params: StorefrontSearchParams) {
     pageSize,
     totalPages: Math.max(1, Math.ceil(total / pageSize)),
   };
+  } catch {
+    return { products: [], total: 0, page: 1, pageSize: PRODUCT_PAGE_SIZE, totalPages: 1 };
+  }
 }
 
 export async function getFeaturedProducts() {
-  const products = await prisma.product.findMany({
-    where: { isPublished: true },
-    include: { brand: true, images: true },
-    orderBy: { createdAt: 'desc' },
-    take: 6,
-  });
+  try {
+    const products = await prisma.product.findMany({
+      where: { isPublished: true },
+      include: { brand: true, images: true },
+      orderBy: { createdAt: 'desc' },
+      take: 6,
+    });
 
-  return products.map((item) => ({
-    id: item.id,
-    title: item.title,
-    price: item.price,
-    brand: item.brand?.name ?? 'Workspace',
-    image: item.images?.[0]?.url ?? 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80',
-    rating: 4.8,
-  }));
+    return products.map((item) => ({
+      id: item.id,
+      title: item.title,
+      price: item.price,
+      brand: item.brand?.name ?? 'Workspace',
+      image: item.images?.[0]?.url ?? 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80',
+      rating: 4.8,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export async function getCollections() {
-  const collections = await prisma.collection.findMany({ take: 5, orderBy: { createdAt: 'desc' } });
-  return collections.map((collection) => ({
-    title: collection.name,
-    description: collection.description ?? 'Curated workspace setup',
-    image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80',
-  }));
+  try {
+    const collections = await prisma.collection.findMany({ take: 5, orderBy: { createdAt: 'desc' } });
+    return collections.map((collection) => ({
+      title: collection.name,
+      description: collection.description ?? 'Curated workspace setup',
+      image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80',
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export type StorefrontProductDetail = {
@@ -242,6 +258,7 @@ export type StorefrontRelatedProduct = {
 };
 
 export async function getProductBySlug(slug: string) {
+  try {
   const product = await prisma.product.findUnique({
     where: { slug },
     include: {
@@ -288,9 +305,13 @@ export async function getProductBySlug(slug: string) {
       coverImageId: variant.coverImageId,
     })),
   };
+  } catch {
+    return null;
+  }
 }
 
 export async function getProductReviewSummary(productId: string) {
+  try {
   const aggregate = await prisma.review.aggregate({
     where: { productId },
     _count: { _all: true },
@@ -301,9 +322,13 @@ export async function getProductReviewSummary(productId: string) {
     reviewCount: aggregate._count._all,
     averageRating: aggregate._avg.rating ?? 0,
   };
+  } catch {
+    return { reviewCount: 0, averageRating: 0 };
+  }
 }
 
 export async function getProductReviews(productId: string, page = 1, pageSize = 4) {
+  try {
   const reviewPage = Math.max(1, page);
   const [total, reviews] = await Promise.all([
     prisma.review.count({ where: { productId } }),
@@ -341,11 +366,15 @@ export async function getProductReviews(productId: string, page = 1, pageSize = 
     pageSize,
     totalPages: Math.max(1, Math.ceil(total / pageSize)),
   };
+  } catch {
+    return { reviews: [], total: 0, page: 1, pageSize, totalPages: 1 };
+  }
 }
 
 export async function getRelatedProducts(productId: string, categorySlug?: string, brandSlug?: string) {
   if (!categorySlug && !brandSlug) return [];
 
+  try {
   const related = await prisma.product.findMany({
     where: {
       id: { not: productId },
@@ -368,9 +397,13 @@ export async function getRelatedProducts(productId: string, categorySlug?: strin
     image: product.images?.[0]?.url ?? 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80',
     brand: product.brand?.name ?? 'Independent',
   }));
+  } catch {
+    return [];
+  }
 }
 
 export async function getFrequentlyBoughtTogether(productId: string, limit = 4) {
+  try {
   const purchasedTogether = await prisma.orderItem.findMany({
     where: {
       order: { items: { some: { variant: { productId } } } },
@@ -407,9 +440,13 @@ export async function getFrequentlyBoughtTogether(productId: string, limit = 4) 
     .sort((a, b) => b.count - a.count)
     .slice(0, limit)
     .map((entry) => entry.product);
+  } catch {
+    return [];
+  }
 }
 
 export async function getProductsBySlugs(slugs: string[]) {
+  try {
   const products = await prisma.product.findMany({
     where: { slug: { in: slugs }, isPublished: true },
     include: { brand: true, images: true },
@@ -428,4 +465,7 @@ export async function getProductsBySlugs(slugs: string[]) {
       image: product.images?.[0]?.url ?? 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80',
       brand: product.brand?.name ?? 'Independent',
     }));
+  } catch {
+    return [];
+  }
 }

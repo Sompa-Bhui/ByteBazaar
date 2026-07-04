@@ -1,4 +1,4 @@
-import { ProductGrid, ProductCardData } from './ProductGrid';
+import { ProductGrid } from './ProductGrid';
 import { SectionHeading } from './ui/SectionHeading';
 import type { StorefrontRelatedProduct } from '@/lib/storefront';
 

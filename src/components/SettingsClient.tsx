@@ -29,7 +29,7 @@ export default function SettingsClient({ user }: { user: UserSummary }) {
       const data = await res.json();
       if (res.ok) toast.success('Profile saved');
       else toast.error(data.error || 'Save failed');
-    } catch (_err) {
+    } catch {
       toast.error('Save failed');
     } finally {
       setLoading(false);

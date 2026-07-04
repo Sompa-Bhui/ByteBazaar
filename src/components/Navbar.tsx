@@ -1,8 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
-import { SignedIn, SignedOut, UserButton, ClerkProvider } from '@clerk/nextjs';
 
 export default function Navbar() {
   // menu open state removed (unused)
@@ -25,8 +24,7 @@ export default function Navbar() {
   }
 
   return (
-    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
-      <header className="border-b bg-white dark:bg-black">
+    <header className="border-b bg-white dark:bg-black">
         <div className="container flex items-center justify-between py-4">
           <Link href="/" className="text-2xl font-semibold">
             ByteBazaar
@@ -35,17 +33,11 @@ export default function Navbar() {
             <button onClick={toggleTheme} className="px-3 py-1 border rounded">
               Toggle Theme
             </button>
-            <SignedOut>
-              <Link href="/sign-in" className="px-3 py-1">
-                Sign in
-              </Link>
-            </SignedOut>
-            <SignedIn>
-              <UserButton afterSignOutUrl="/" />
-            </SignedIn>
+            <Link href="/sign-in" className="px-3 py-1">
+              Sign in
+            </Link>
           </nav>
         </div>
       </header>
-    </ClerkProvider>
   );
 }

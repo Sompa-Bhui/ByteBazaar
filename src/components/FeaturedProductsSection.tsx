@@ -1,4 +1,5 @@
-import { ProductGrid, ProductCardData } from './ProductGrid';
+import { ProductGrid } from './ProductGrid';
+import type { ProductCardData } from './ProductCard';
 import { SectionHeading } from './ui/SectionHeading';
 
 const featuredProducts: ProductCardData[] = [

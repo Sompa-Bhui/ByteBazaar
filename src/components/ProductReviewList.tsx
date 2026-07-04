@@ -9,13 +9,17 @@ export default function ProductReviewList({
   totalReviews,
   page,
   totalPages,
+  productSlug,
 }: {
   reviews: StorefrontReview[];
   averageRating: number;
   totalReviews: number;
   page: number;
   totalPages: number;
+  productSlug?: string;
 }) {
+  const queryPrefix = productSlug ? `/products/${productSlug}` : '';
+
   return (
     <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -57,10 +61,10 @@ export default function ProductReviewList({
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500 dark:text-slate-400">
         <p>Page {page} of {totalPages}</p>
         <div className="flex gap-2">
-          <Link href={`?reviewPage=${Math.max(1, page - 1)}`} className={`rounded-full border px-4 py-2 ${page <= 1 ? 'cursor-not-allowed border-slate-200 text-slate-300 dark:border-slate-800 dark:text-slate-600' : 'border-slate-200 text-slate-700 hover:border-slate-300 dark:border-slate-800 dark:text-slate-200'}`}>
+          <Link href={`${queryPrefix}?reviewPage=${Math.max(1, page - 1)}`} className={`rounded-full border px-4 py-2 ${page <= 1 ? 'cursor-not-allowed border-slate-200 text-slate-300 dark:border-slate-800 dark:text-slate-600' : 'border-slate-200 text-slate-700 hover:border-slate-300 dark:border-slate-800 dark:text-slate-200'}`}>
             Previous
           </Link>
-          <Link href={`?reviewPage=${Math.min(totalPages, page + 1)}`} className={`rounded-full border px-4 py-2 ${page >= totalPages ? 'cursor-not-allowed border-slate-200 text-slate-300 dark:border-slate-800 dark:text-slate-600' : 'border-slate-200 text-slate-700 hover:border-slate-300 dark:border-slate-800 dark:text-slate-200'}`}>
+          <Link href={`${queryPrefix}?reviewPage=${Math.min(totalPages, page + 1)}`} className={`rounded-full border px-4 py-2 ${page >= totalPages ? 'cursor-not-allowed border-slate-200 text-slate-300 dark:border-slate-800 dark:text-slate-600' : 'border-slate-200 text-slate-700 hover:border-slate-300 dark:border-slate-800 dark:text-slate-200'}`}>
             Next
           </Link>
         </div>

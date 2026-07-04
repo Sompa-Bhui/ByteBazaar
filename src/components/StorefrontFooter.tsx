@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 
 const sections = [
   { title: 'Explore', links: ['Products', 'Collections', 'Brands', 'About'] },
@@ -13,9 +12,7 @@ export default function StorefrontFooter() {
       <div className="container mx-auto grid gap-10 md:grid-cols-4">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">ByteBazaar</p>
-          <p className="mt-6 max-w-xs text-sm leading-6 text-slate-600 dark:text-slate-400">
-            Discover premium workspace products, curated for developers, creators, and entrepreneurs.
-          </p>
+          <p className="mt-6 max-w-xs text-sm leading-6 text-slate-600 dark:text-slate-400">Discover premium workspace products, curated for developers, creators, and entrepreneurs.</p>
         </div>
         {sections.map((section) => (
           <div key={section.title}>
@@ -30,9 +27,7 @@ export default function StorefrontFooter() {
           </div>
         ))}
       </div>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="mt-16 border-t border-slate-200 pt-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
-        © {new Date().getFullYear()} ByteBazaar. Crafted for modern workspace experiences.
-      </motion.div>
+      <div className="mt-16 border-t border-slate-200 pt-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">© {new Date().getFullYear()} ByteBazaar. Crafted for modern workspace experiences.</div>
     </footer>
   );
 }

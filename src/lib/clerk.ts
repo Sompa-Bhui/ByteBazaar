@@ -33,7 +33,7 @@ export async function upsertUserFromClerk(userId: string) {
     if (role && (role === 'ADMIN' || role === 'CUSTOMER')) {
       await prisma.user.update({ where: { id: dbUser.id }, data: { role } }).catch(() => null);
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
 
