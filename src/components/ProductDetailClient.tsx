@@ -20,6 +20,9 @@ export default function ProductDetailClient({ product }: { product: StorefrontPr
   const [selectedVariantId, setSelectedVariantId] = useState(product.variants[0]?.id ?? '');
   const [quantity, setQuantity] = useState(1);
   const [wishlisted, setWishlisted] = useState(false);
+  const [loadingCart, setLoadingCart] = useState(false);
+  const [loadingWishlist, setLoadingWishlist] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   const selectedVariant = useMemo(
     () => product.variants.find((variant) => variant.id === selectedVariantId) ?? product.variants[0],
@@ -33,32 +36,60 @@ export default function ProductDetailClient({ product }: { product: StorefrontPr
   const isOnSale = selectedVariant?.compareAt && selectedVariant.compareAt > getVariantPrice(selectedVariant, product.price);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem('bytebazaar-wishlist');
-    setWishlisted(Boolean(saved && saved.split(',').includes(product.slug)));
-  }, [product.slug]);
-
-  function addToCart() {
-    const payload = {
-      productId: product.id,
-      productSlug: product.slug,
-      variantId: selectedVariant?.id ?? null,
-      quantity,
-      addedAt: new Date().toISOString(),
+    let cancelled = false;
+    fetch('/api/wishlist')
+      .then((response) => response.json())
+      .then((data) => {
+        if (cancelled) return;
+        const items = data?.data?.items ?? [];
+        const isWished = items.some((item: { variantId?: string }) => item.variantId === selectedVariant?.id);
+        setWishlisted(Boolean(isWished));
+      })
+      .catch(() => null);
+    return () => {
+      cancelled = true;
     };
-    const existing = JSON.parse(window.localStorage.getItem('bytebazaar-cart') ?? '[]') as typeof payload[];
-    window.localStorage.setItem('bytebazaar-cart', JSON.stringify([...existing.filter((item) => item.productId !== product.id || item.variantId !== selectedVariant?.id), payload]));
+  }, [selectedVariant?.id]);
+
+  async function addToCart() {
+    if (!selectedVariant || stockCount <= 0 || loadingCart) return;
+    setLoadingCart(true);
+    setMessage(null);
+    try {
+      const response = await fetch('/api/cart/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ variantId: selectedVariant.id, quantity }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error ?? 'Unable to add to cart');
+      setMessage('Added to cart');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Unable to add to cart');
+    } finally {
+      setLoadingCart(false);
+    }
   }
 
-  function toggleWishlist() {
-    const saved = window.localStorage.getItem('bytebazaar-wishlist');
-    const items = new Set((saved ?? '').split(',').filter(Boolean));
-    if (items.has(product.slug)) {
-      items.delete(product.slug);
-    } else {
-      items.add(product.slug);
+  async function toggleWishlist() {
+    if (!selectedVariant || loadingWishlist) return;
+    setLoadingWishlist(true);
+    setMessage(null);
+    try {
+      const response = await fetch('/api/wishlist/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ variantId: selectedVariant.id }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error ?? 'Unable to update wishlist');
+      setWishlisted(Boolean(data?.data?.wished));
+      setMessage(data?.data?.wished ? 'Added to wishlist' : 'Removed from wishlist');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Unable to update wishlist');
+    } finally {
+      setLoadingWishlist(false);
     }
-    window.localStorage.setItem('bytebazaar-wishlist', Array.from(items).join(','));
-    setWishlisted(items.has(product.slug));
   }
 
   return (
@@ -126,13 +157,14 @@ export default function ProductDetailClient({ product }: { product: StorefrontPr
                 className="w-16 border-0 bg-transparent text-center text-sm outline-none"
               />
             </label>
-            <Button as="button" type="button" onClick={addToCart} disabled={stockCount <= 0} className="min-w-40">
-              Add to cart
+            <Button as="button" type="button" onClick={addToCart} disabled={stockCount <= 0 || loadingCart} className="min-w-40">
+              {loadingCart ? 'Adding...' : 'Add to cart'}
             </Button>
-            <Button as="button" type="button" onClick={toggleWishlist} variant="secondary">
-              {wishlisted ? 'Saved to wishlist' : 'Add to wishlist'}
+            <Button as="button" type="button" onClick={toggleWishlist} variant="secondary" disabled={loadingWishlist}>
+              {loadingWishlist ? 'Updating...' : wishlisted ? 'Saved to wishlist' : 'Add to wishlist'}
             </Button>
           </div>
+          {message ? <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{message}</p> : null}
         </div>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
