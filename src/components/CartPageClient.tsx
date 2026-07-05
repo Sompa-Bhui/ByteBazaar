@@ -120,7 +120,7 @@ export function CartPageClient() {
         <div className="mt-6 flex flex-col gap-3">
           <Link href="/products" className="inline-flex rounded-full bg-slate-900 px-4 py-2 text-white dark:bg-white dark:text-slate-950">Continue Shopping</Link>
           <button onClick={clearCart} className="inline-flex rounded-full border px-4 py-2 text-sm">Clear Cart</button>
-          <button className="inline-flex rounded-full border px-4 py-2 text-sm opacity-60" disabled>Checkout</button>
+          <Link href="/checkout" className="inline-flex rounded-full bg-slate-900 px-4 py-2 text-white dark:bg-white dark:text-slate-950">Checkout</Link>
         </div>
       </aside>
     </div>

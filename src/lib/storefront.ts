@@ -323,7 +323,7 @@ export async function getProductReviewSummary(productId: string) {
   if (!hasDatabaseUrl()) return { reviewCount: 0, averageRating: 0 };
   try {
   const aggregate = await prisma.review.aggregate({
-    where: { productId },
+    where: { productId, isApproved: true },
     _count: { _all: true },
     _avg: { rating: true },
   });
@@ -342,9 +342,9 @@ export async function getProductReviews(productId: string, page = 1, pageSize = 
   try {
   const reviewPage = Math.max(1, page);
   const [total, reviews] = await Promise.all([
-    prisma.review.count({ where: { productId } }),
+    prisma.review.count({ where: { productId, isApproved: true } }),
     prisma.review.findMany({
-      where: { productId },
+      where: { productId, isApproved: true },
       include: { user: true },
       orderBy: { createdAt: 'desc' },
       skip: (reviewPage - 1) * pageSize,
@@ -370,7 +370,7 @@ export async function getProductReviews(productId: string, page = 1, pageSize = 
       rating: review.rating,
       createdAt: review.createdAt.toISOString(),
       userName: review.user?.name ?? 'Customer',
-      verifiedPurchase: verifiedUserIds.has(review.userId),
+      verifiedPurchase: review.verifiedPurchase || verifiedUserIds.has(review.userId),
     })),
     total,
     page: reviewPage,

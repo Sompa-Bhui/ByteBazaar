@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import ProductBreadcrumbs from '@/components/ProductBreadcrumbs';
 import ProductSpecifications from '@/components/ProductSpecifications';
 import ProductReviewList from '@/components/ProductReviewList';
+import { ProductReviewManager } from '@/components/ProductReviewManager';
 import RelatedProducts from '@/components/RelatedProducts';
 import FrequentlyBoughtTogether from '@/components/FrequentlyBoughtTogether';
 import ProductDetailClient from '@/components/ProductDetailClient';
@@ -69,6 +70,7 @@ export default async function ProductDetailPage({ params, searchParams }: { para
           totalPages={reviewData.totalPages}
           productSlug={product.slug}
         />
+        <ProductReviewManager productId={product.id} />
         <RelatedProducts products={relatedProducts} />
       </div>
     </div>

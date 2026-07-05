@@ -196,6 +196,8 @@ model Address {
   user        User     @relation(fields: [userId], references: [id])
   userId      String
   label       String?  // Home / Work
+  isDefault   Boolean  @default(false)
+  fullName    String
   line1       String
   line2       String?
   city        String
@@ -213,6 +215,7 @@ model Address {
 
 model Order {
   id                String      @id @default(cuid())
+  idempotencyKey    String?     @unique
   user              User        @relation(fields: [userId], references: [id])
   userId            String
   items             OrderItem[]
@@ -230,6 +233,8 @@ model Order {
   coupon            Coupon?     @relation(fields: [couponId], references: [id])
   couponId          String?
   payments          Payment[]
+  cancelledAt       DateTime?
+  restockedAt       DateTime?
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   deletedAt         DateTime?
@@ -259,6 +264,7 @@ model Coupon {
   description   String?
   discountType  DiscountType
   amount        Int      // percentage (e.g., 10) or fixed cents depending on type
+  minAmount     Int?
   usageLimit    Int?
   usedCount     Int      @default(0)
   startsAt      DateTime?
@@ -280,6 +286,8 @@ model Review {
   rating     Int
   title      String?
   body       String?
+  verifiedPurchase Boolean @default(false)
+  isApproved Boolean @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -293,10 +301,13 @@ model Payment {
   user          User?         @relation(fields: [userId], references: [id])
   userId        String?
   provider      String
+  providerOrderId String?     @unique
   providerId    String        // provider-specific payment id
   amount        Int
   currency      String        @default("INR")
   status        PaymentStatus @default(PENDING)
+  failureReason String?
+  verifiedAt    DateTime?
   metadata      Json?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
