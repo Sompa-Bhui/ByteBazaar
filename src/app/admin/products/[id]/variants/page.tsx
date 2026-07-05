@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 export default async function VariantsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: productId } = await params;

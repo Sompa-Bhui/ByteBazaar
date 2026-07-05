@@ -2,6 +2,7 @@
 
 import { ReactNode, useEffect } from 'react';
 import { ClerkProvider } from '@clerk/nextjs';
+import { CartWishlistProvider } from './cart-wishlist-context';
 
 export default function Providers({ children }: { children: ReactNode }) {
   useEffect(() => {
@@ -12,7 +13,9 @@ export default function Providers({ children }: { children: ReactNode }) {
 
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-  if (!publishableKey) return <>{children}</>;
+  const content = <CartWishlistProvider>{children}</CartWishlistProvider>;
 
-  return <ClerkProvider publishableKey={publishableKey}>{children}</ClerkProvider>;
+  if (!publishableKey) return content;
+
+  return <ClerkProvider publishableKey={publishableKey}>{content}</ClerkProvider>;
 }

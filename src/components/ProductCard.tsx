@@ -1,7 +1,11 @@
+"use client";
+
+import { useEffect, useState, type MouseEvent } from 'react';
 import Link from 'next/link';
 import { Badge } from './ui/Badge';
 import { Card, CardBody } from './ui/Cards';
 import { Button } from './ui/Button';
+import { useCartWishlist } from './cart-wishlist-context';
 
 export type ProductCardData = {
   id: string;
@@ -15,15 +19,69 @@ export type ProductCardData = {
 };
 
 export function ProductCard({ product }: { product: ProductCardData }) {
+  const { isWishlistedProduct, refreshWishlist } = useCartWishlist();
+  const [mutating, setMutating] = useState(false);
+  const [wishlisted, setWishlisted] = useState(isWishlistedProduct(product.id));
+
+  useEffect(() => {
+    setWishlisted(isWishlistedProduct(product.id));
+  }, [isWishlistedProduct, product.id]);
+
+  async function toggleWishlist(event: MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (mutating) return;
+    setMutating(true);
+    try {
+      const response = await fetch('/api/wishlist/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: product.id }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        if (response.status === 401) {
+          window.location.href = '/sign-in';
+          return;
+        }
+        throw new Error(data?.error ?? 'Unable to update wishlist');
+      }
+      const wished = Boolean(data?.data?.wished);
+      setWishlisted(wished);
+      await refreshWishlist();
+    } catch {
+      // keep existing state on error
+    } finally {
+      setMutating(false);
+    }
+  }
+
   return (
     <Card className="group">
-      <Link href={`/products/${product.slug}`} className="block overflow-hidden rounded-3xl bg-slate-100">
-        <img
-          src={product.image}
-          alt={product.title}
-          className="h-72 w-full object-cover"
-        />
-      </Link>
+      <div className="relative">
+        <Link href={`/products/${product.slug}`} className="block overflow-hidden rounded-3xl bg-slate-100">
+          <img
+            src={product.image}
+            alt={product.title}
+            className="h-72 w-full object-cover"
+          />
+        </Link>
+        <button
+          type="button"
+          onClick={toggleWishlist}
+          disabled={mutating}
+          aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          className={[
+            'absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full border backdrop-blur transition',
+            wishlisted
+              ? 'border-rose-300/30 bg-rose-500/15 text-rose-500'
+              : 'border-slate-200 bg-white/90 text-slate-700 dark:border-slate-700 dark:bg-slate-950/90 dark:text-slate-200',
+            mutating ? 'cursor-wait opacity-60' : 'hover:scale-105',
+          ].join(' ')}
+        >
+          <HeartIcon filled={wishlisted} />
+        </button>
+      </div>
       <CardBody>
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -43,5 +101,13 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         </div>
       </CardBody>
     </Card>
+  );
+}
+
+function HeartIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" className="h-4.5 w-4.5">
+      <path d="M12 21s-7-4.4-9.2-9.2A5.8 5.8 0 0 1 12 5.2a5.8 5.8 0 0 1 9.2 6.6C19 16.6 12 21 12 21Z" />
+    </svg>
   );
 }

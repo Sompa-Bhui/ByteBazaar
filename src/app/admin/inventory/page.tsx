@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 export default async function InventoryPage() {
   const variants = await prisma.productVariant.findMany({ include: { product: true, inventory: true }, orderBy: { updatedAt: 'desc' }, take: 200 });

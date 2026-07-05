@@ -1,7 +1,7 @@
 import VariantForm from '@/components/admin/VariantForm';
 import { prisma } from '@/lib/prisma';
 
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 export default async function EditVariantPage({ params }: { params: Promise<{ id: string; variantId: string }> }) {
   const { id: productId, variantId } = await params;

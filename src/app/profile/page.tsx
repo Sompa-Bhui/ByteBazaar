@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation';
 import { upsertUserFromClerk } from '@/lib/clerk';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ProfilePage() {
   let userId: string | null = null;
   try {

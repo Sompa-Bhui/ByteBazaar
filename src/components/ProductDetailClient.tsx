@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
 import { SectionHeading } from './ui/SectionHeading';
 import type { StorefrontProductDetail } from '@/lib/storefront';
+import { useCartWishlist } from './cart-wishlist-context';
 
 type DetailVariant = StorefrontProductDetail['variants'][number];
 
@@ -17,9 +18,9 @@ function getVariantPrice(variant: DetailVariant | undefined, fallback: number) {
 }
 
 export default function ProductDetailClient({ product }: { product: StorefrontProductDetail }) {
+  const { isWishlistedVariant, refreshAll } = useCartWishlist();
   const [selectedVariantId, setSelectedVariantId] = useState(product.variants[0]?.id ?? '');
   const [quantity, setQuantity] = useState(1);
-  const [wishlisted, setWishlisted] = useState(false);
   const [loadingCart, setLoadingCart] = useState(false);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -34,22 +35,7 @@ export default function ProductDetailClient({ product }: { product: StorefrontPr
   const stockCount = selectedVariant?.inventory?.quantityOnHand ?? 0;
   const availability = stockCount > 0 ? 'In stock' : 'Out of stock';
   const isOnSale = selectedVariant?.compareAt && selectedVariant.compareAt > getVariantPrice(selectedVariant, product.price);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/wishlist')
-      .then((response) => response.json())
-      .then((data) => {
-        if (cancelled) return;
-        const items = data?.data?.items ?? [];
-        const isWished = items.some((item: { variantId?: string }) => item.variantId === selectedVariant?.id);
-        setWishlisted(Boolean(isWished));
-      })
-      .catch(() => null);
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedVariant?.id]);
+  const wishlisted = isWishlistedVariant(selectedVariant?.id ?? '');
 
   async function addToCart() {
     if (!selectedVariant || stockCount <= 0 || loadingCart) return;
@@ -64,6 +50,7 @@ export default function ProductDetailClient({ product }: { product: StorefrontPr
       const data = await response.json();
       if (!response.ok) throw new Error(data?.error ?? 'Unable to add to cart');
       setMessage('Added to cart');
+      await refreshAll();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Unable to add to cart');
     } finally {
@@ -83,9 +70,13 @@ export default function ProductDetailClient({ product }: { product: StorefrontPr
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data?.error ?? 'Unable to update wishlist');
-      setWishlisted(Boolean(data?.data?.wished));
       setMessage(data?.data?.wished ? 'Added to wishlist' : 'Removed from wishlist');
+      await refreshAll();
     } catch (error) {
+      if (error instanceof Error && error.message === 'Authentication required') {
+        window.location.href = '/sign-in';
+        return;
+      }
       setMessage(error instanceof Error ? error.message : 'Unable to update wishlist');
     } finally {
       setLoadingWishlist(false);

@@ -26,7 +26,12 @@ export type NormalizedCart = {
 };
 
 type CartWithItems = Cart & {
-  items: (CartItem & { variant: ProductVariant & { product: Product & { images: { url: string; position: number }[] } } })[];
+  items: (CartItem & {
+    variant: ProductVariant & {
+      inventory: { quantityOnHand: number } | null;
+      product: Product & { images: { url: string; position: number }[] };
+    };
+  })[];
 };
 
 const cartInclude = {
@@ -34,6 +39,7 @@ const cartInclude = {
     include: {
       variant: {
         include: {
+          inventory: true,
           product: {
             include: { images: { orderBy: { position: 'asc' } } },
           },
@@ -44,8 +50,9 @@ const cartInclude = {
   },
 } satisfies Prisma.CartInclude;
 
-function getGuestTokenFromCookies() {
-  return cookies().get(GUEST_CART_COOKIE)?.value ?? null;
+async function getGuestTokenFromCookies() {
+  const cookieStore = await cookies();
+  return cookieStore.get(GUEST_CART_COOKIE)?.value ?? null;
 }
 
 export function getGuestCartCookieOptions() {
@@ -59,7 +66,7 @@ export function getGuestCartCookieOptions() {
 }
 
 export async function ensureGuestCartToken() {
-  return getGuestTokenFromCookies() ?? randomUUID();
+  return (await getGuestTokenFromCookies()) ?? randomUUID();
 }
 
 export function normalizeCart(cart: CartWithItems): NormalizedCart {
@@ -105,21 +112,21 @@ export async function resolveUserDbId(clerkId?: string | null) {
   return created.id;
 }
 
-export async function findOrCreateCart(clerkId?: string | null) {
+export async function findOrCreateCart(clerkId?: string | null, guestToken?: string | null) {
   const userId = await resolveUserDbId(clerkId);
   if (userId) {
     const existing = await prisma.cart.findFirst({ where: { userId }, include: cartInclude });
     if (existing) return existing;
     return prisma.cart.create({ data: { userId }, include: cartInclude });
   }
-  const token = await ensureGuestCartToken();
+  const token = guestToken ?? (await ensureGuestCartToken());
   const existing = await prisma.cart.findFirst({ where: { token }, include: cartInclude });
   if (existing) return existing;
   return prisma.cart.create({ data: { token }, include: cartInclude });
 }
 
-export async function getResolvedCart(clerkId?: string | null) {
-  const cart = await findOrCreateCart(clerkId);
+export async function getResolvedCart(clerkId?: string | null, guestToken?: string | null) {
+  const cart = await findOrCreateCart(clerkId, guestToken);
   return normalizeCart(cart);
 }
 

@@ -4,6 +4,8 @@ import { ProductCard } from '@/components/ProductCard';
 import { Button } from '@/components/ui/Button';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Products | ByteBazaar',
   description: 'Browse workspace products with live search, category, brand, price, and sort filters.',

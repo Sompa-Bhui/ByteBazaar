@@ -4,6 +4,7 @@ import { getAuth, clerkClient } from '@clerk/nextjs/server';
 
 async function runChecks(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const hasClerkSecrets = Boolean(process.env.CLERK_SECRET_KEY);
 
   // Protect admin routes
   if (pathname.startsWith('/admin')) {
@@ -11,6 +12,9 @@ async function runChecks(req: NextRequest) {
     if (!userId) {
       const signInUrl = new URL('/sign-in', req.url);
       return NextResponse.redirect(signInUrl);
+    }
+    if (!hasClerkSecrets) {
+      return NextResponse.next();
     }
     // Check role from Clerk publicMetadata
     const client = await clerkClient();

@@ -1,5 +1,5 @@
 import type { Prisma } from '@prisma/client';
-import { prisma } from './prisma';
+import { hasDatabaseUrl, prisma } from './prisma';
 
 export type StorefrontProduct = {
   id: string;
@@ -134,6 +134,9 @@ function mapProduct(item: ProductWithRelations): StorefrontProduct {
 }
 
 export async function getProductFilters() {
+  if (!hasDatabaseUrl()) {
+    return { brands: [], categories: [] };
+  }
   try {
     const [brands, categories] = await Promise.all([
       prisma.brand.findMany({ orderBy: { name: 'asc' } }),
@@ -150,6 +153,9 @@ export async function getProductFilters() {
 }
 
 export async function searchProducts(params: StorefrontSearchParams) {
+  if (!hasDatabaseUrl()) {
+    return { products: [], total: 0, page: 1, pageSize: PRODUCT_PAGE_SIZE, totalPages: 1 };
+  }
   try {
   const page = Math.max(1, Number.parseInt(params.page ?? '1', 10) || 1);
   const pageSize = PRODUCT_PAGE_SIZE;
@@ -179,6 +185,7 @@ export async function searchProducts(params: StorefrontSearchParams) {
 }
 
 export async function getFeaturedProducts() {
+  if (!hasDatabaseUrl()) return [];
   try {
     const products = await prisma.product.findMany({
       where: { isPublished: true },
@@ -201,6 +208,7 @@ export async function getFeaturedProducts() {
 }
 
 export async function getCollections() {
+  if (!hasDatabaseUrl()) return [];
   try {
     const collections = await prisma.collection.findMany({ take: 5, orderBy: { createdAt: 'desc' } });
     return collections.map((collection) => ({
@@ -258,6 +266,7 @@ export type StorefrontRelatedProduct = {
 };
 
 export async function getProductBySlug(slug: string) {
+  if (!hasDatabaseUrl()) return null;
   try {
   const product = await prisma.product.findUnique({
     where: { slug },
@@ -311,6 +320,7 @@ export async function getProductBySlug(slug: string) {
 }
 
 export async function getProductReviewSummary(productId: string) {
+  if (!hasDatabaseUrl()) return { reviewCount: 0, averageRating: 0 };
   try {
   const aggregate = await prisma.review.aggregate({
     where: { productId },
@@ -328,6 +338,7 @@ export async function getProductReviewSummary(productId: string) {
 }
 
 export async function getProductReviews(productId: string, page = 1, pageSize = 4) {
+  if (!hasDatabaseUrl()) return { reviews: [], total: 0, page: 1, pageSize, totalPages: 1 };
   try {
   const reviewPage = Math.max(1, page);
   const [total, reviews] = await Promise.all([
@@ -373,6 +384,7 @@ export async function getProductReviews(productId: string, page = 1, pageSize = 
 
 export async function getRelatedProducts(productId: string, categorySlug?: string, brandSlug?: string) {
   if (!categorySlug && !brandSlug) return [];
+  if (!hasDatabaseUrl()) return [];
 
   try {
   const related = await prisma.product.findMany({
@@ -403,6 +415,7 @@ export async function getRelatedProducts(productId: string, categorySlug?: strin
 }
 
 export async function getFrequentlyBoughtTogether(productId: string, limit = 4) {
+  if (!hasDatabaseUrl()) return [];
   try {
   const purchasedTogether = await prisma.orderItem.findMany({
     where: {
@@ -446,6 +459,7 @@ export async function getFrequentlyBoughtTogether(productId: string, limit = 4) 
 }
 
 export async function getProductsBySlugs(slugs: string[]) {
+  if (!hasDatabaseUrl()) return [];
   try {
   const products = await prisma.product.findMany({
     where: { slug: { in: slugs }, isPublished: true },

@@ -9,9 +9,9 @@ export async function GET(req: Request) {
     const guestToken = await ensureGuestCartToken();
     if (auth.userId) {
       await mergeGuestCartIntoUserCart(guestToken, auth.userId).catch(() => null);
-      return NextResponse.json({ ok: true, data: await getResolvedCart(auth.userId) });
+      return NextResponse.json({ ok: true, data: await getResolvedCart(auth.userId, guestToken) });
     }
-    const response = NextResponse.json({ ok: true, data: await getResolvedCart(null) });
+    const response = NextResponse.json({ ok: true, data: await getResolvedCart(null, guestToken) });
     response.cookies.set('bytebazaar_guest_cart', guestToken, getGuestCartCookieOptions());
     return response;
   } catch {
@@ -22,9 +22,10 @@ export async function GET(req: Request) {
 export async function DELETE(req: Request) {
   try {
     const auth = getAuth(req as Parameters<typeof getAuth>[0]);
+    const guestToken = await ensureGuestCartToken();
     const cart = auth.userId
       ? await prisma.cart.findFirst({ where: { user: { clerkId: auth.userId } } })
-      : await prisma.cart.findFirst({ where: { token: await ensureGuestCartToken() } });
+      : await prisma.cart.findFirst({ where: { token: guestToken } });
     if (cart) {
       await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
       await prisma.cart.delete({ where: { id: cart.id } });

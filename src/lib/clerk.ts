@@ -2,6 +2,7 @@ import { clerkClient } from '@clerk/nextjs/server';
 import { prisma } from './prisma';
 
 export async function upsertUserFromClerk(userId: string) {
+  if (!process.env.CLERK_SECRET_KEY) return null;
   const client = await clerkClient();
   const user = await client.users.getUser(userId).catch(() => null);
   if (!user) return null;

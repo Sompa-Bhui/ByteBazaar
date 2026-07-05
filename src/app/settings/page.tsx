@@ -4,6 +4,8 @@ import { upsertUserFromClerk } from '@/lib/clerk';
 import { redirect } from 'next/navigation';
 import SettingsClient from '@/components/SettingsClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function SettingsPage() {
   let userId: string | null = null;
   try {

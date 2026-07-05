@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { CartWishlistCounts } from './CartWishlistCounts';
 
 export default function Navbar() {
   // menu open state removed (unused)
@@ -30,6 +31,13 @@ export default function Navbar() {
             ByteBazaar
           </Link>
           <nav className="flex items-center gap-4">
+            <CartWishlistCounts />
+            <Link href="/cart" className="px-3 py-1">
+              Cart
+            </Link>
+            <Link href="/wishlist" className="px-3 py-1">
+              Wishlist
+            </Link>
             <button onClick={toggleTheme} className="px-3 py-1 border rounded">
               Toggle Theme
             </button>

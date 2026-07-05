@@ -8,6 +8,8 @@ import FrequentlyBoughtTogether from '@/components/FrequentlyBoughtTogether';
 import ProductDetailClient from '@/components/ProductDetailClient';
 import { getProductBySlug, getProductReviewSummary, getProductReviews, getRelatedProducts, getFrequentlyBoughtTogether } from '@/lib/storefront';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(slug);

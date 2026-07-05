@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Button } from './ui/Button';
+import { CartWishlistCounts } from './CartWishlistCounts';
 
 const menuItems = [
   { label: 'Products', href: '/products' },
@@ -51,6 +52,9 @@ export default function StorefrontHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <CartWishlistCounts />
+          <Link href="/cart" className="text-sm font-medium text-slate-700 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">Cart</Link>
+          <Link href="/wishlist" className="text-sm font-medium text-slate-700 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">Wishlist</Link>
           <Button as="a" href="/products" variant="secondary" size="sm">
             Shop
           </Button>

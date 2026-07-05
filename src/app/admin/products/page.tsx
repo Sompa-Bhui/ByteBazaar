@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 export default async function ProductsPage() {
   const products = await prisma.product.findMany({ take: 50, orderBy: { createdAt: 'desc' }, include: { brand: true, images: true, variants: true } });

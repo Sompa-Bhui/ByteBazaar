@@ -17,7 +17,8 @@ export async function POST(req: Request) {
     const variant = await validateVariantForCart(body.variantId);
     if (!variant) return NextResponse.json({ ok: false, error: 'Invalid variant' }, { status: 404 });
     assertStock(variant.inventory?.quantityOnHand ?? 0, body.quantity);
-    const cart = await findOrCreateCart(auth.userId ?? null);
+    const guestToken = await ensureGuestCartToken();
+    const cart = await findOrCreateCart(auth.userId ?? null, guestToken);
     const existing = await prisma.cartItem.findFirst({ where: { cartId: cart.id, variantId: body.variantId }, select: { id: true, quantity: true } });
     const nextQty = Math.min((existing?.quantity ?? 0) + body.quantity, variant.inventory?.quantityOnHand ?? 0);
     if (nextQty <= 0) return NextResponse.json({ ok: false, error: 'Out of stock' }, { status: 409 });
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
       include: { items: { include: { variant: { include: { product: { include: { images: { orderBy: { position: 'asc' } } } } } } }, orderBy: { addedAt: 'asc' } } },
     }) as never);
     const response = NextResponse.json({ ok: true, data: normalized });
-    if (!auth.userId) response.cookies.set('bytebazaar_guest_cart', await ensureGuestCartToken(), getGuestCartCookieOptions());
+    if (!auth.userId) response.cookies.set('bytebazaar_guest_cart', guestToken, getGuestCartCookieOptions());
     return response;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Invalid request';
