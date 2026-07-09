@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import { hasDatabaseUrl, prisma } from './prisma';
+import seedData from '../../prisma/seed-data.json';
 
 export type StorefrontProduct = {
   id: string;
@@ -35,6 +36,74 @@ export type StorefrontSearchResult = {
 };
 
 export const PRODUCT_PAGE_SIZE = 12;
+
+const DEFAULT_TECH_IMAGE = 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80';
+
+type SeedData = typeof seedData;
+type SeedProduct = SeedData['products'][number] & { categoryNames?: string[]; image?: string };
+
+const seedCategoriesById = new Map(seedData.categories.map((category) => [category.id, category]));
+const seedBrandsById = new Map(seedData.brands.map((brand) => [brand.id, brand]));
+const seedProductImagesByProductId = new Map<string, string>(
+  seedData.productImages
+    .slice()
+    .sort((a, b) => a.position - b.position)
+    .map((image) => [image.productId, image.url]),
+);
+const seedCategoryLinksByProductId = new Map<string, string[]>();
+
+for (const link of seedData.productCategories) {
+  const category = seedCategoriesById.get(link.categoryId);
+  if (!category) continue;
+  const list = seedCategoryLinksByProductId.get(link.productId) ?? [];
+  list.push(category.name);
+  seedCategoryLinksByProductId.set(link.productId, list);
+}
+
+function mapSeedProduct(product: SeedProduct): StorefrontProduct {
+  return {
+    id: product.id,
+    title: product.title,
+    slug: product.slug,
+    brand: seedBrandsById.get(product.brandId)?.name ?? 'Independent',
+    price: product.price,
+    image: seedProductImagesByProductId.get(product.id) ?? DEFAULT_TECH_IMAGE,
+    shortDesc: product.shortDesc ?? product.description ?? '',
+    categoryNames: seedCategoryLinksByProductId.get(product.id) ?? [],
+  };
+}
+
+function buildSeedProductWhere(params: StorefrontSearchParams) {
+  const q = params.q?.trim().toLowerCase();
+  const category = params.category?.trim().toLowerCase();
+  const brand = params.brand?.trim().toLowerCase();
+  const priceRange = parsePriceRange(params.price);
+
+  return seedData.products
+    .map((product) => mapSeedProduct(product))
+    .filter((product) => {
+      if (category && !seedCategoryLinksByProductId.get(product.id)?.some((categoryName) => category === categoryName.toLowerCase())) {
+        return false;
+      }
+
+      if (brand) {
+        const seedBrand = seedBrandsById.get(seedData.products.find((item) => item.id === product.id)?.brandId ?? '');
+        if (!seedBrand || seedBrand.slug.toLowerCase() !== brand) return false;
+      }
+
+      if (q) {
+        const haystack = [product.title, product.brand, product.shortDesc ?? '', ...product.categoryNames].join(' ').toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+
+      if (priceRange) {
+        if (priceRange.min !== undefined && product.price < priceRange.min) return false;
+        if (priceRange.max !== undefined && product.price > priceRange.max) return false;
+      }
+
+      return true;
+    });
+}
 
 type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
@@ -127,7 +196,7 @@ function mapProduct(item: ProductWithRelations): StorefrontProduct {
     price: item.price,
     image:
       item.images?.[0]?.url ??
-      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80',
+      DEFAULT_TECH_IMAGE,
     shortDesc: item.shortDesc ?? item.description ?? '',
     categoryNames: item.categories?.map((record) => record.category.name) ?? [],
   };
@@ -135,7 +204,10 @@ function mapProduct(item: ProductWithRelations): StorefrontProduct {
 
 export async function getProductFilters() {
   if (!hasDatabaseUrl()) {
-    return { brands: [], categories: [] };
+    return {
+      brands: seedData.brands.map((brand) => ({ label: brand.name, value: brand.slug })),
+      categories: seedData.categories.map((category) => ({ label: category.name, value: category.slug })),
+    };
   }
   try {
     const [brands, categories] = await Promise.all([
@@ -154,7 +226,19 @@ export async function getProductFilters() {
 
 export async function searchProducts(params: StorefrontSearchParams) {
   if (!hasDatabaseUrl()) {
-    return { products: [], total: 0, page: 1, pageSize: PRODUCT_PAGE_SIZE, totalPages: 1 };
+    const page = Math.max(1, Number.parseInt(params.page ?? '1', 10) || 1);
+    const pageSize = PRODUCT_PAGE_SIZE;
+    const products = buildSeedProductWhere(params);
+    const total = products.length;
+    const paginated = products.slice((page - 1) * pageSize, page * pageSize);
+
+    return {
+      products: paginated,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    };
   }
   try {
   const page = Math.max(1, Number.parseInt(params.page ?? '1', 10) || 1);
@@ -185,7 +269,14 @@ export async function searchProducts(params: StorefrontSearchParams) {
 }
 
 export async function getFeaturedProducts() {
-  if (!hasDatabaseUrl()) return [];
+  if (!hasDatabaseUrl()) return seedData.products.slice(0, 6).map((product) => mapSeedProduct(product)).map((product) => ({
+    id: product.id,
+    title: product.title,
+    price: product.price,
+    brand: product.brand,
+    image: product.image,
+    rating: 4.8,
+  }));
   try {
     const products = await prisma.product.findMany({
       where: { isPublished: true },
@@ -199,7 +290,7 @@ export async function getFeaturedProducts() {
       title: item.title,
       price: item.price,
       brand: item.brand?.name ?? 'Workspace',
-      image: item.images?.[0]?.url ?? 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80',
+      image: item.images?.[0]?.url ?? DEFAULT_TECH_IMAGE,
       rating: 4.8,
     }));
   } catch {
@@ -208,13 +299,19 @@ export async function getFeaturedProducts() {
 }
 
 export async function getCollections() {
-  if (!hasDatabaseUrl()) return [];
+  if (!hasDatabaseUrl()) {
+    return seedData.categories.slice(0, 5).map((category) => ({
+      title: category.name,
+      description: category.description ?? 'Curated workspace setup',
+      image: DEFAULT_TECH_IMAGE,
+    }));
+  }
   try {
     const collections = await prisma.collection.findMany({ take: 5, orderBy: { createdAt: 'desc' } });
     return collections.map((collection) => ({
       title: collection.name,
       description: collection.description ?? 'Curated workspace setup',
-      image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80',
+      image: DEFAULT_TECH_IMAGE,
     }));
   } catch {
     return [];
@@ -406,7 +503,7 @@ export async function getRelatedProducts(productId: string, categorySlug?: strin
     title: product.title,
     slug: product.slug,
     price: product.price,
-    image: product.images?.[0]?.url ?? 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80',
+    image: product.images?.[0]?.url ?? DEFAULT_TECH_IMAGE,
     brand: product.brand?.name ?? 'Independent',
   }));
   } catch {
@@ -443,7 +540,7 @@ export async function getFrequentlyBoughtTogether(productId: string, limit = 4) 
       title: otherProduct.title,
       slug: otherProduct.slug,
       price: otherProduct.price,
-      image: otherProduct.images?.[0]?.url ?? 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80',
+      image: otherProduct.images?.[0]?.url ?? DEFAULT_TECH_IMAGE,
       brand: otherProduct.brand?.name ?? 'Independent',
     };
     counts.set(otherProduct.id, { count: (existing?.count ?? 0) + 1, product: existing?.product ?? productEntry });
@@ -476,7 +573,7 @@ export async function getProductsBySlugs(slugs: string[]) {
       title: product.title,
       slug: product.slug,
       price: product.price,
-      image: product.images?.[0]?.url ?? 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80',
+      image: product.images?.[0]?.url ?? DEFAULT_TECH_IMAGE,
       brand: product.brand?.name ?? 'Independent',
     }));
   } catch {

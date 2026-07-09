@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(req: Request, context: { params: Promise<Record<string, string>> }) {
-  const { productId } = await context.params;
+  const { id: productId } = await context.params;
   const images = await prisma.productImage.findMany({ where: { productId }, orderBy: { position: 'asc' } });
   return NextResponse.json(images);
 }
 
 export async function POST(req: Request, context: { params: Promise<Record<string, string>> }) {
   try {
-    const { productId } = await context.params;
+    const { id: productId } = await context.params;
     const body = await req.json();
     type IncomingImage = { url: string; publicId?: string; altText?: string; variantId?: string };
     const images: IncomingImage[] = body.images || [];

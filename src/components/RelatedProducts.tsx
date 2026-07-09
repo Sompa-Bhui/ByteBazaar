@@ -24,6 +24,7 @@ export default function RelatedProducts({ products }: { products: StorefrontRela
           price: product.price,
           image: product.image,
           rating: 4.6,
+          techSignal: 'Build Lab ready',
         }))} />
       </div>
     </section>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCartWishlist } from './cart-wishlist-context';
+import { MarketplaceImage } from './MarketplaceImage';
 
 type WishlistItem = {
   id: string;
@@ -81,8 +82,10 @@ export function WishlistPageClient() {
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {actionError ? <div className="md:col-span-2 xl:col-span-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/30 dark:bg-rose-950/20 dark:text-rose-200">{actionError}</div> : null}
       {items.map((item) => (
-        <article key={item.id} className="rounded-3xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-          <img src={item.variant.product.images[0]?.url ?? ''} alt={item.variant.product.title} className="h-48 w-full rounded-2xl object-cover" />
+        <article key={item.id} className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-100">
+            <MarketplaceImage src={item.variant.product.images[0]?.url ?? undefined} alt={item.variant.product.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+          </div>
           <h3 className="mt-4 font-semibold text-slate-950 dark:text-white">{item.variant.product.title}</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400">{item.variant.title}</p>
           <div className="mt-4 flex gap-3">

@@ -1,18 +1,127 @@
 {
   "categories": [
-    { "id": "cat-standup", "name": "Standup", "slug": "standup", "description": "Standing desks and accessories" },
-    { "id": "cat-monitor", "name": "Monitors", "slug": "monitors", "description": "Developer monitors and arms" }
+    { "id": "cat-workstations", "name": "Workstations", "slug": "workstations", "description": "Developer desks, mounts, and core setup gear" },
+    { "id": "cat-displays", "name": "Displays", "slug": "displays", "description": "Ultrawide monitors and visual workspace tools" },
+    { "id": "cat-inputs", "name": "Inputs", "slug": "inputs", "description": "Keyboards, mice, and precise interaction gear" },
+    { "id": "cat-audio", "name": "Audio", "slug": "audio", "description": "Headsets, microphones, and speaker gear" },
+    { "id": "cat-lighting", "name": "Lighting", "slug": "lighting", "description": "Monitor lights and desk illumination" },
+    { "id": "cat-accessories", "name": "Accessories", "slug": "accessories", "description": "USB-C docks, hubs, stands, and storage" }
   ],
   "brands": [
-    { "id": "brand-ergotech", "name": "ErgoTech", "slug": "ergotech", "website": "https://ergotech.example" },
-    { "id": "brand-viewmax", "name": "ViewMax", "slug": "viewmax", "website": "https://viewmax.example" }
+    { "id": "brand-byteview", "name": "ByteView", "slug": "byteview", "website": "https://byteview.example" },
+    { "id": "brand-byteforge", "name": "ByteForge", "slug": "byteforge", "website": "https://byteforge.example" },
+    { "id": "brand-bytekeys", "name": "ByteKeys", "slug": "bytekeys", "website": "https://bytekeys.example" },
+    { "id": "brand-bytemouse", "name": "ByteMouse", "slug": "bytemouse", "website": "https://bytemouse.example" },
+    { "id": "brand-bytedock", "name": "ByteDock", "slug": "bytedock", "website": "https://bytedock.example" },
+    { "id": "brand-bytesound", "name": "ByteSound", "slug": "bytesound", "website": "https://bytesound.example" },
+    { "id": "brand-bytecam", "name": "ByteCam", "slug": "bytecam", "website": "https://bytecam.example" }
   ],
   "products": [
-    { "id": "prod-standing-1", "title": "Pro Standing Desk", "slug": "pro-standing-desk", "shortDesc": "Height adjustable desk", "price": 24999, "brandId": "brand-ergotech" },
-    { "id": "prod-monitor-1", "title": "UltraWide 34", "slug": "ultrawide-34", "shortDesc": "34-inch ultrawide monitor", "price": 39999, "brandId": "brand-viewmax" }
+    {
+      "id": "prod-byteview-34",
+      "title": "ByteView 34 UltraWide",
+      "slug": "byteview-34-ultrawide",
+      "shortDesc": "34-inch ultrawide display for coders and creators.",
+      "description": "A premium curved ultrawide monitor built for multitasking, timelines, and immersive workspace layouts.",
+      "price": 3999900,
+      "brandId": "brand-byteview",
+      "isPublished": true
+    },
+    {
+      "id": "prod-byteforge-workspace-kit",
+      "title": "ByteForge Developer Workspace Kit",
+      "slug": "byteforge-developer-workspace-kit",
+      "shortDesc": "Developer workspace bundle for coding and shipping faster.",
+      "description": "A curated desk-tech bundle built for focused development, clean cable management, and setup consistency.",
+      "price": 11999900,
+      "brandId": "brand-byteforge",
+      "isPublished": true
+    },
+    {
+      "id": "prod-bytekeys-pro-75",
+      "title": "ByteKeys Pro 75",
+      "slug": "bytekeys-pro-75",
+      "shortDesc": "Compact mechanical keyboard for fast typing.",
+      "description": "A tactile 75% mechanical keyboard with hot-swappable switches and productivity-first layout.",
+      "price": 1299900,
+      "brandId": "brand-bytekeys",
+      "isPublished": true
+    },
+    {
+      "id": "prod-bytemouse-ergo-x",
+      "title": "ByteMouse Ergo X",
+      "slug": "bytemouse-ergo-x",
+      "shortDesc": "Ergonomic mouse for long coding sessions.",
+      "description": "A precision ergonomic mouse with silent clicks, programmable buttons, and a comfortable thumb rest.",
+      "price": 899900,
+      "brandId": "brand-bytemouse",
+      "isPublished": true
+    },
+    {
+      "id": "prod-bytedock-12",
+      "title": "ByteDock 12-in-1",
+      "slug": "bytedock-12-in-1",
+      "shortDesc": "USB-C hub for modern laptops.",
+      "description": "A compact 12-in-1 USB-C dock with display output, power delivery, card readers, and essential ports.",
+      "price": 1499900,
+      "brandId": "brand-bytedock",
+      "isPublished": true
+    },
+    {
+      "id": "prod-bytesound-studio",
+      "title": "ByteSound Studio",
+      "slug": "bytesound-studio",
+      "shortDesc": "Desktop audio for calls and focus.",
+      "description": "A clean-sounding desktop speaker set tuned for calls, media, and everyday desk audio.",
+      "price": 2199900,
+      "brandId": "brand-bytesound",
+      "isPublished": true
+    },
+    {
+      "id": "prod-bytecam-4k",
+      "title": "ByteCam 4K",
+      "slug": "bytecam-4k",
+      "shortDesc": "Sharp webcam for meetings and streaming.",
+      "description": "A 4K webcam with autofocus and low-light tuning for polished remote work and content creation.",
+      "price": 1899900,
+      "brandId": "brand-bytecam",
+      "isPublished": true
+    }
+  ],
+  "productCategories": [
+    { "id": "pc-1", "productId": "prod-byteview-34", "categoryId": "cat-displays" },
+    { "id": "pc-2", "productId": "prod-byteforge-workspace-kit", "categoryId": "cat-workstations" },
+    { "id": "pc-3", "productId": "prod-bytekeys-pro-75", "categoryId": "cat-inputs" },
+    { "id": "pc-4", "productId": "prod-bytemouse-ergo-x", "categoryId": "cat-inputs" },
+    { "id": "pc-5", "productId": "prod-bytedock-12", "categoryId": "cat-accessories" },
+    { "id": "pc-6", "productId": "prod-bytesound-studio", "categoryId": "cat-audio" },
+    { "id": "pc-7", "productId": "prod-bytecam-4k", "categoryId": "cat-accessories" }
+  ],
+  "productImages": [
+      { "id": "img-1", "productId": "prod-byteview-34", "url": "/build-lab/byteview-34-ultrawide.svg", "altText": "Ultrawide monitor", "position": 0 },
+    { "id": "img-2", "productId": "prod-byteforge-workspace-kit", "url": "/featured-products/byteforge-workspace-kit.svg", "altText": "Developer workspace bundle", "position": 0 },
+      { "id": "img-3", "productId": "prod-bytekeys-pro-75", "url": "/build-lab/bytekeys-pro-75.svg", "altText": "Mechanical keyboard", "position": 0 },
+      { "id": "img-4", "productId": "prod-bytemouse-ergo-x", "url": "/build-lab/bytemouse-ergo-x.svg", "altText": "Ergonomic mouse", "position": 0 },
+    { "id": "img-5", "productId": "prod-bytedock-12", "url": "/featured-products/bytedock-12-in-1.svg", "altText": "USB-C dock", "position": 0 },
+    { "id": "img-6", "productId": "prod-bytesound-studio", "url": "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1200&q=80", "altText": "Desktop speaker", "position": 0 },
+      { "id": "img-7", "productId": "prod-bytecam-4k", "url": "/build-lab/bytecam-4k.svg", "altText": "Webcam", "position": 0 }
   ],
   "variants": [
-    { "id": "var-desk-black", "productId": "prod-standing-1", "title": "Black / 160cm", "sku": "DESK-BLK-160", "price": 24999 },
-    { "id": "var-monitor-34", "productId": "prod-monitor-1", "title": "34in Curved", "sku": "MON-34-CRV", "price": 39999 }
+    { "id": "var-1", "productId": "prod-byteview-34", "title": "34-inch Curved", "sku": "BYTEVIEW-34-CRV", "price": 399999, "inventoryId": "inv-1" },
+    { "id": "var-2", "productId": "prod-byteforge-workspace-kit", "title": "Developer Workspace Kit", "sku": "BYTEFORGE-DWK", "price": 11999900, "inventoryId": "inv-2" },
+    { "id": "var-3", "productId": "prod-bytekeys-pro-75", "title": "Graphite Linear", "sku": "BYTEKEYS-75-GPH", "price": 1299900, "inventoryId": "inv-3" },
+    { "id": "var-4", "productId": "prod-bytemouse-ergo-x", "title": "Right-handed", "sku": "BYTEMOUSE-ERGO-RH", "price": 899900, "inventoryId": "inv-4" },
+    { "id": "var-5", "productId": "prod-bytedock-12", "title": "Space Gray", "sku": "BYTEDOCK-12-SG", "price": 1499900, "inventoryId": "inv-5" },
+    { "id": "var-6", "productId": "prod-bytesound-studio", "title": "Dual Speaker", "sku": "BYTESOUND-STUDIO-DS", "price": 2199900, "inventoryId": "inv-6" },
+    { "id": "var-7", "productId": "prod-bytecam-4k", "title": "4K Autofocus", "sku": "BYTECAM-4K-AF", "price": 1899900, "inventoryId": "inv-7" }
+  ],
+  "inventories": [
+    { "id": "inv-1", "variantId": "var-1", "sku": "BYTEVIEW-34-CRV", "quantityOnHand": 12, "safetyStock": 2, "location": "Main Warehouse" },
+    { "id": "inv-2", "variantId": "var-2", "sku": "BYTEFORGE-DWK", "quantityOnHand": 8, "safetyStock": 2, "location": "Main Warehouse" },
+    { "id": "inv-3", "variantId": "var-3", "sku": "BYTEKEYS-75-GPH", "quantityOnHand": 24, "safetyStock": 4, "location": "Main Warehouse" },
+    { "id": "inv-4", "variantId": "var-4", "sku": "BYTEMOUSE-ERGO-RH", "quantityOnHand": 20, "safetyStock": 4, "location": "Main Warehouse" },
+    { "id": "inv-5", "variantId": "var-5", "sku": "BYTEDOCK-12-SG", "quantityOnHand": 16, "safetyStock": 3, "location": "Main Warehouse" },
+    { "id": "inv-6", "variantId": "var-6", "sku": "BYTESOUND-STUDIO-DS", "quantityOnHand": 10, "safetyStock": 2, "location": "Main Warehouse" },
+    { "id": "inv-7", "variantId": "var-7", "sku": "BYTECAM-4K-AF", "quantityOnHand": 14, "safetyStock": 2, "location": "Main Warehouse" }
   ]
 }

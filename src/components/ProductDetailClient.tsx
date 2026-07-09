@@ -6,12 +6,10 @@ import { Button } from './ui/Button';
 import { SectionHeading } from './ui/SectionHeading';
 import type { StorefrontProductDetail } from '@/lib/storefront';
 import { useCartWishlist } from './cart-wishlist-context';
+import { MarketplaceImage } from './MarketplaceImage';
+import { formatINR } from '@/lib/format';
 
 type DetailVariant = StorefrontProductDetail['variants'][number];
-
-function formatPrice(value: number) {
-  return `₹${(value / 100).toFixed(2)}`;
-}
 
 function getVariantPrice(variant: DetailVariant | undefined, fallback: number) {
   return variant?.price ?? fallback;
@@ -31,7 +29,7 @@ export default function ProductDetailClient({ product }: { product: StorefrontPr
   );
 
   const selectedImages = selectedVariant?.images.length ? selectedVariant.images : product.images;
-  const coverUrl = selectedImages[0]?.url ?? product.images[0]?.url ?? '';
+  const coverUrl = selectedImages[0]?.url ?? product.images[0]?.url ?? undefined;
   const stockCount = selectedVariant?.inventory?.quantityOnHand ?? 0;
   const availability = stockCount > 0 ? 'In stock' : 'Out of stock';
   const isOnSale = selectedVariant?.compareAt && selectedVariant.compareAt > getVariantPrice(selectedVariant, product.price);
@@ -85,14 +83,18 @@ export default function ProductDetailClient({ product }: { product: StorefrontPr
 
   return (
     <div className="grid gap-8 xl:grid-cols-[1.05fr_0.95fr]">
-      <section className="space-y-6">
+      <section className="space-y-5">
         <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-          <img src={coverUrl} alt={selectedVariant?.title ?? product.title} className="aspect-square w-full object-cover" />
+          <div className="relative aspect-square w-full bg-slate-100">
+            <MarketplaceImage src={coverUrl} alt={selectedVariant?.title ?? product.title} fill className="object-cover" sizes="(max-width: 1280px) 100vw, 50vw" />
+          </div>
         </div>
-        <div className="grid gap-4 sm:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-4">
           {selectedImages.slice(0, 4).map((image) => (
             <button key={image.id} type="button" className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
-              <img src={image.url} alt={image.altText ?? product.title} className="h-28 w-full object-cover" />
+              <div className="relative aspect-square bg-slate-100">
+                <MarketplaceImage src={image.url} alt={image.altText ?? product.title} fill className="object-cover" sizes="(max-width: 640px) 50vw, 20vw" />
+              </div>
             </button>
           ))}
         </div>
@@ -109,8 +111,8 @@ export default function ProductDetailClient({ product }: { product: StorefrontPr
           </div>
           <div className="mt-6 flex flex-wrap items-end gap-4">
             <div>
-              <p className="text-4xl font-semibold text-slate-950 dark:text-white">{formatPrice(getVariantPrice(selectedVariant, product.price))}</p>
-              {isOnSale && selectedVariant?.compareAt ? <p className="text-sm text-slate-500 line-through dark:text-slate-400">{formatPrice(selectedVariant.compareAt)}</p> : null}
+              <p className="text-4xl font-semibold text-slate-950 dark:text-white">{formatINR(getVariantPrice(selectedVariant, product.price))}</p>
+              {isOnSale && selectedVariant?.compareAt ? <p className="text-sm text-slate-500 line-through dark:text-slate-400">{formatINR(selectedVariant.compareAt)}</p> : null}
             </div>
             <p className="text-sm text-slate-500 dark:text-slate-400">{stockCount} available</p>
           </div>

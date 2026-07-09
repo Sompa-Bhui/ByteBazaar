@@ -24,6 +24,7 @@ export default function FrequentlyBoughtTogether({ products }: { products: Store
           price: product.price,
           image: product.image,
           rating: 4.6,
+          techSignal: 'Build Lab ready',
         }))} />
       </div>
     </section>

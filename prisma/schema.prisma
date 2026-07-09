@@ -7,82 +7,79 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Production-grade normalized schema for ByteBazaar
-
 model User {
-  id            String      @id @default(cuid())
-  clerkId       String?     @unique
-  email         String?     @unique
-  name          String?
-  avatarUrl     String?
-  bio           String?
-  role          Role        @default(CUSTOMER)
-  addresses     Address[]
-  carts         Cart[]
-  wishlists     Wishlist[]
-  orders        Order[]
-  reviews       Review[]
-  payments      Payment[]
-  notifications Notification[]
-  deskSetups    DeskSetup[]
+  id             String          @id @default(cuid())
+  clerkId        String?         @unique
+  email          String?         @unique
+  name           String?
+  avatarUrl      String?
+  bio            String?
+  role           Role            @default(CUSTOMER)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  deletedAt      DateTime?
+  addresses      Address[]
+  carts          Cart[]
+  comments       Comment[]
+  deskSetups     DeskSetup[]
   deskSetupLikes DeskSetupLike[]
-  comments      Comment[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  deletedAt     DateTime?
+  notifications  Notification[]
+  orders         Order[]
+  payments       Payment[]
+  reviews        Review[]
+  wishlists      Wishlist[]
 
   @@index([email])
 }
 
 model Category {
-  id          String     @id @default(cuid())
+  id          String            @id @default(cuid())
   name        String
-  slug        String     @unique
+  slug        String            @unique
   description String?
-  products    ProductCategory[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
   deletedAt   DateTime?
+  products    ProductCategory[]
 
   @@index([slug])
 }
 
 model Brand {
-  id        String     @id @default(cuid())
-  name      String     @unique
-  slug      String     @unique
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
   website   String?
-  products  Product[]
-  createdAt DateTime   @default(now())
-  
-  updatedAt DateTime   @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+  products  Product[]
 
   @@index([name])
 }
 
 model Product {
-  id            String            @id @default(cuid())
-  title         String
-  slug          String            @unique
-  shortDesc     String?
-  description   String?
-  sku           String?           @unique
-  brand         Brand?            @relation(fields: [brandId], references: [id])
-  brandId       String?
-  categories    ProductCategory[]
-  images        ProductImage[]
-  coverImage    ProductImage? @relation("ProductCoverImage", fields: [coverImageId], references: [id])
-  coverImageId  String? @unique
-  variants      ProductVariant[]
-  collections   ProductCollection[]
-  reviews       Review[]
-  isPublished   Boolean           @default(false)
-  price         Int               // base/default price in cents
-  msrp          Int?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  deletedAt     DateTime?
+  id           String              @id @default(cuid())
+  title        String
+  slug         String              @unique
+  shortDesc    String?
+  description  String?
+  sku          String?             @unique
+  brandId      String?
+  coverImageId String?             @unique
+  isPublished  Boolean             @default(false)
+  price        Int
+  msrp         Int?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  deletedAt    DateTime?
+  brand        Brand?              @relation(fields: [brandId], references: [id])
+  coverImage   ProductImage?       @relation("ProductCoverImage", fields: [coverImageId], references: [id])
+  categories   ProductCategory[]
+  collections  ProductCollection[]
+  images       ProductImage[]
+  variants     ProductVariant[]
+  reviews      Review[]
 
   @@index([slug])
   @@index([title])
@@ -90,17 +87,17 @@ model Product {
 }
 
 model ProductImage {
-  id         String   @id @default(cuid())
-  product    Product  @relation(fields: [productId], references: [id])
-  productId  String
-  variant    ProductVariant? @relation(fields: [variantId], references: [id])
-  variantId  String?
-  publicId   String?
-  url        String
-  altText    String?
-  position   Int      @default(0)
-  createdAt  DateTime @default(now())
-  productCover Product? @relation("ProductCoverImage")
+  id           String          @id @default(cuid())
+  productId    String
+  variantId    String?
+  publicId     String?
+  url          String
+  altText      String?
+  position     Int             @default(0)
+  createdAt    DateTime        @default(now())
+  productCover Product?        @relation("ProductCoverImage")
+  product      Product         @relation(fields: [productId], references: [id])
+  variant      ProductVariant? @relation(fields: [variantId], references: [id])
   variantCover ProductVariant? @relation("VariantCoverImage")
 
   @@index([productId])
@@ -108,107 +105,107 @@ model ProductImage {
 }
 
 model ProductVariant {
-  id           String    @id @default(cuid())
-  product      Product   @relation(fields: [productId], references: [id])
-  productId    String
-  title        String
-  sku          String?   @unique
-  price        Int       // override price in cents
-  compareAt    Int?
-  attributes   Json?
-  inventory    Inventory?
-  images       ProductImage[]
-  coverImage    ProductImage? @relation("VariantCoverImage", fields: [coverImageId], references: [id])
-  coverImageId  String? @unique
+  id            String         @id @default(cuid())
+  productId     String
+  title         String
+  sku           String?        @unique
+  price         Int
+  compareAt     Int?
+  attributes    Json?
+  coverImageId  String?        @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  cartItems     CartItem[]
+  inventory     Inventory?
+  orderItems    OrderItem[]
+  images        ProductImage[]
+  coverImage    ProductImage?  @relation("VariantCoverImage", fields: [coverImageId], references: [id])
+  product       Product        @relation(fields: [productId], references: [id])
   wishlistItems WishlistItem[]
-  orderItems   OrderItem[]
-  cartItems    CartItem[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
 
   @@index([productId])
 }
 
 model Inventory {
-  id              String    @id @default(cuid())
-  variant         ProductVariant @relation(fields: [variantId], references: [id])
-  variantId       String    @unique
-  sku             String?   @unique
-  quantityOnHand  Int       @default(0)
-  safetyStock     Int       @default(0)
+  id              String         @id @default(cuid())
+  variantId       String         @unique
+  sku             String?        @unique
+  quantityOnHand  Int            @default(0)
+  safetyStock     Int            @default(0)
   location        String?
   lastUpdatedById String?
-  lastUpdatedAt   DateTime  @updatedAt
-  createdAt       DateTime  @default(now())
+  lastUpdatedAt   DateTime       @updatedAt
+  createdAt       DateTime       @default(now())
+  variant         ProductVariant @relation(fields: [variantId], references: [id])
 
   @@index([sku])
 }
 
 model Wishlist {
-  id        String     @id @default(cuid())
-  user      User       @relation(fields: [userId], references: [id])
+  id        String         @id @default(cuid())
   userId    String
+  name      String?        @default("Favorites")
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  user      User           @relation(fields: [userId], references: [id])
   items     WishlistItem[]
-  name      String?    @default("Favorites")
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
 
   @@index([userId])
 }
 
 model WishlistItem {
-  id          String         @id @default(cuid())
-  wishlist    Wishlist       @relation(fields: [wishlistId], references: [id])
-  wishlistId  String
-  variant     ProductVariant @relation(fields: [variantId], references: [id])
-  variantId   String
-  createdAt   DateTime       @default(now())
+  id         String         @id @default(cuid())
+  wishlistId String
+  variantId  String
+  createdAt  DateTime       @default(now())
+  variant    ProductVariant @relation(fields: [variantId], references: [id])
+  wishlist   Wishlist       @relation(fields: [wishlistId], references: [id])
 
   @@index([wishlistId, variantId])
 }
 
 model Cart {
-  id         String     @id @default(cuid())
-  user       User?      @relation(fields: [userId], references: [id])
-  userId     String?
-  items      CartItem[]
-  token      String?    @unique // for anonymous carts
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  id        String     @id @default(cuid())
+  userId    String?
+  token     String?    @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User?      @relation(fields: [userId], references: [id])
+  items     CartItem[]
 
   @@index([userId])
 }
 
 model CartItem {
-  id         String         @id @default(cuid())
-  cart       Cart           @relation(fields: [cartId], references: [id])
-  cartId     String
-  variant    ProductVariant @relation(fields: [variantId], references: [id])
-  variantId  String
-  quantity   Int            @default(1)
-  addedAt    DateTime       @default(now())
+  id        String         @id @default(cuid())
+  cartId    String
+  variantId String
+  quantity  Int            @default(1)
+  addedAt   DateTime       @default(now())
+  cart      Cart           @relation(fields: [cartId], references: [id])
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
 
   @@index([cartId, variantId])
 }
 
 model Address {
-  id          String   @id @default(cuid())
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String
-  label       String?  // Home / Work
-  isDefault   Boolean  @default(false)
-  fullName    String
-  line1       String
-  line2       String?
-  city        String
-  state       String?
-  postalCode  String
-  country     String
-  phone       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  shippingOrders Order[] @relation("OrderShippingAddress")
-  billingOrders  Order[] @relation("OrderBillingAddress")
+  id             String   @id @default(cuid())
+  userId         String
+  label          String?
+  isDefault      Boolean  @default(false)
+  fullName       String
+  line1          String
+  line2          String?
+  city           String
+  state          String?
+  postalCode     String
+  country        String
+  phone          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id])
+  billingOrders  Order[]  @relation("OrderBillingAddress")
+  shippingOrders Order[]  @relation("OrderShippingAddress")
 
   @@index([userId])
 }
@@ -216,9 +213,7 @@ model Address {
 model Order {
   id                String      @id @default(cuid())
   idempotencyKey    String?     @unique
-  user              User        @relation(fields: [userId], references: [id])
   userId            String
-  items             OrderItem[]
   subtotal          Int
   shipping          Int
   tax               Int
@@ -226,179 +221,181 @@ model Order {
   total             Int
   currency          String      @default("INR")
   status            OrderStatus @default(PENDING)
-  shippingAddress   Address?    @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id])
   shippingAddressId String?
-  billingAddress    Address?    @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
   billingAddressId  String?
-  coupon            Coupon?     @relation(fields: [couponId], references: [id])
   couponId          String?
-  payments          Payment[]
   cancelledAt       DateTime?
   restockedAt       DateTime?
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   deletedAt         DateTime?
+  billingAddress    Address?    @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
+  coupon            Coupon?     @relation(fields: [couponId], references: [id])
+  shippingAddress   Address?    @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id])
+  user              User        @relation(fields: [userId], references: [id])
+  items             OrderItem[]
+  payments          Payment[]
 
   @@index([userId, status])
 }
 
 model OrderItem {
-  id           String    @id @default(cuid())
-  order        Order     @relation(fields: [orderId], references: [id])
-  orderId      String
-  variant      ProductVariant @relation(fields: [variantId], references: [id])
-  variantId    String
-  title        String
-  sku          String?
-  unitPrice    Int
-  quantity     Int
-  totalPrice   Int
-  createdAt    DateTime  @default(now())
+  id         String         @id @default(cuid())
+  orderId    String
+  variantId  String
+  title      String
+  sku        String?
+  unitPrice  Int
+  quantity   Int
+  totalPrice Int
+  createdAt  DateTime       @default(now())
+  order      Order          @relation(fields: [orderId], references: [id])
+  variant    ProductVariant @relation(fields: [variantId], references: [id])
 
   @@index([orderId])
 }
 
 model Coupon {
-  id            String   @id @default(cuid())
-  code          String   @unique
-  description   String?
-  discountType  DiscountType
-  amount        Int      // percentage (e.g., 10) or fixed cents depending on type
-  minAmount     Int?
-  usageLimit    Int?
-  usedCount     Int      @default(0)
-  startsAt      DateTime?
-  expiresAt     DateTime?
-  active        Boolean  @default(true)
-  orders        Order[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String       @id @default(cuid())
+  code         String       @unique
+  description  String?
+  discountType DiscountType
+  amount       Int
+  minAmount    Int?
+  usageLimit   Int?
+  usedCount    Int          @default(0)
+  startsAt     DateTime?
+  expiresAt    DateTime?
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  orders       Order[]
 
   @@index([code])
 }
 
 model Review {
-  id         String   @id @default(cuid())
-  user       User     @relation(fields: [userId], references: [id])
-  userId     String
-  product    Product  @relation(fields: [productId], references: [id])
-  productId  String
-  rating     Int
-  title      String?
-  body       String?
-  verifiedPurchase Boolean @default(false)
-  isApproved Boolean @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id               String   @id @default(cuid())
+  userId           String
+  productId        String
+  rating           Int
+  title            String?
+  body             String?
+  verifiedPurchase Boolean  @default(false)
+  isApproved       Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  product          Product  @relation(fields: [productId], references: [id])
+  user             User     @relation(fields: [userId], references: [id])
 
   @@index([productId, userId])
 }
 
 model Payment {
-  id            String        @id @default(cuid())
-  order         Order?        @relation(fields: [orderId], references: [id])
-  orderId       String?
-  user          User?         @relation(fields: [userId], references: [id])
-  userId        String?
-  provider      String
-  providerOrderId String?     @unique
-  providerId    String        // provider-specific payment id
-  amount        Int
-  currency      String        @default("INR")
-  status        PaymentStatus @default(PENDING)
-  failureReason String?
-  verifiedAt    DateTime?
-  metadata      Json?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id              String        @id @default(cuid())
+  orderId         String?
+  userId          String?
+  provider        String
+  providerOrderId String?       @unique
+  providerId      String
+  amount          Int
+  currency        String        @default("INR")
+  status          PaymentStatus @default(PENDING)
+  failureReason   String?
+  verifiedAt      DateTime?
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  order           Order?        @relation(fields: [orderId], references: [id])
+  user            User?         @relation(fields: [userId], references: [id])
 
   @@index([provider, providerId])
 }
 
 model Notification {
-  id         String   @id @default(cuid())
-  user       User     @relation(fields: [userId], references: [id])
-  userId     String
-  title      String
-  body       String?
-  url        String?
-  read       Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  body      String?
+  url       String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 
   @@index([userId, read])
 }
 
 model Collection {
-  id         String     @id @default(cuid())
-  name       String
-  slug       String     @unique
+  id          String              @id @default(cuid())
+  name        String
+  slug        String              @unique
   description String?
-  products   ProductCollection[]
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  products    ProductCollection[]
 
   @@index([slug])
 }
 
 model ProductCollection {
-  id           String   @id @default(cuid())
-  collection   Collection @relation(fields: [collectionId], references: [id])
+  id           String     @id @default(cuid())
   collectionId String
-  product      Product  @relation(fields: [productId], references: [id])
   productId    String
-  position     Int      @default(0)
+  position     Int        @default(0)
+  collection   Collection @relation(fields: [collectionId], references: [id])
+  product      Product    @relation(fields: [productId], references: [id])
 
   @@index([collectionId, productId])
 }
 
 model ProductCategory {
   id         String   @id @default(cuid())
-  product    Product  @relation(fields: [productId], references: [id])
   productId  String
-  category   Category @relation(fields: [categoryId], references: [id])
   categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
 
   @@index([productId, categoryId])
 }
 
 model DeskSetup {
-  id          String      @id @default(cuid())
-  user        User        @relation(fields: [userId], references: [id])
+  id          String          @id @default(cuid())
   userId      String
   title       String
   description String?
-  images      Json?       // array of image URLs / metadata
-  likes       DeskSetupLike[]
+  images      Json?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   comments    Comment[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  user        User            @relation(fields: [userId], references: [id])
+  likes       DeskSetupLike[]
 
   @@index([userId])
 }
 
 model DeskSetupLike {
-  id          String     @id @default(cuid())
-  deskSetup   DeskSetup  @relation(fields: [deskSetupId], references: [id])
+  id          String    @id @default(cuid())
   deskSetupId String
-  user        User       @relation(fields: [userId], references: [id])
   userId      String
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime  @default(now())
+  deskSetup   DeskSetup @relation(fields: [deskSetupId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
 
   @@unique([deskSetupId, userId])
 }
 
 model Comment {
-  id           String    @id @default(cuid())
-  user         User      @relation(fields: [userId], references: [id])
-  userId       String
-  deskSetup    DeskSetup? @relation(fields: [deskSetupId], references: [id])
-  deskSetupId  String?
-  parentId     String?
-  parent       Comment?   @relation("CommentReplies", fields: [parentId], references: [id])
-  replies      Comment[]  @relation("CommentReplies")
-  body         String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id          String     @id @default(cuid())
+  userId      String
+  deskSetupId String?
+  parentId    String?
+  body        String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  deskSetup   DeskSetup? @relation(fields: [deskSetupId], references: [id])
+  parent      Comment?   @relation("CommentReplies", fields: [parentId], references: [id])
+  replies     Comment[]  @relation("CommentReplies")
+  user        User       @relation(fields: [userId], references: [id])
 
   @@index([deskSetupId])
 }
@@ -427,5 +424,3 @@ enum DiscountType {
   PERCENT
   AMOUNT
 }
-
-

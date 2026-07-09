@@ -13,7 +13,7 @@ const menuItems = [
 ];
 
 const categories = [
-  { label: 'Workstations', href: '/products?category=workstation' },
+  { label: 'Workstations', href: '/products?category=workstations' },
   { label: 'Gaming', href: '/products?category=gaming' },
   { label: 'Streaming', href: '/products?category=streaming' },
   { label: 'Student', href: '/products?category=student' },

@@ -27,7 +27,7 @@ export async function DELETE(req: Request, context: { params: Promise<Record<str
 export async function PATCH(req: Request, context: { params: Promise<Record<string, string>> }) {
   // update altText or set as cover: { altText?, setCover?: boolean, variantCover?: boolean }
   try {
-    const { productId, imageId } = await context.params;
+    const { id: productId, imageId } = await context.params;
     const body = await req.json();
     const { altText, setCover, variantId } = body as { altText?: string; setCover?: boolean; variantId?: string };
 

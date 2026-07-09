@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, type MouseEvent } from 'react';
 import Link from 'next/link';
@@ -6,6 +6,8 @@ import { Badge } from './ui/Badge';
 import { Card, CardBody } from './ui/Cards';
 import { Button } from './ui/Button';
 import { useCartWishlist } from './cart-wishlist-context';
+import { MarketplaceImage } from './MarketplaceImage';
+import { formatINR } from '@/lib/format';
 
 export type ProductCardData = {
   id: string;
@@ -16,6 +18,7 @@ export type ProductCardData = {
   badge?: string;
   image: string;
   rating: number;
+  techSignal: string;
 };
 
 export function ProductCard({ product }: { product: ProductCardData }) {
@@ -46,8 +49,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         }
         throw new Error(data?.error ?? 'Unable to update wishlist');
       }
-      const wished = Boolean(data?.data?.wished);
-      setWishlisted(wished);
+      setWishlisted(Boolean(data?.data?.wished));
       await refreshWishlist();
     } catch {
       // keep existing state on error
@@ -57,14 +59,18 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   }
 
   return (
-    <Card className="group">
-      <div className="relative">
-        <Link href={`/products/${product.slug}`} className="block overflow-hidden rounded-3xl bg-slate-100">
-          <img
-            src={product.image}
-            alt={product.title}
-            className="h-72 w-full object-cover"
-          />
+    <Card className="group border-slate-200/80 bg-white/95 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-950/95">
+      <div className="relative overflow-hidden bg-slate-100">
+        <Link href={`/products/${product.slug}`} className="block">
+          <div className="relative aspect-[4/3]">
+            <MarketplaceImage
+              src={product.image}
+              alt={product.title}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+              className="object-cover transition duration-500 group-hover:scale-[1.03]"
+            />
+          </div>
         </Link>
         <button
           type="button"
@@ -82,23 +88,29 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           <HeartIcon filled={wishlisted} />
         </button>
       </div>
-      <CardBody>
+      <CardBody className="space-y-5">
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">{product.subtitle}</p>
-            <h3 className="mt-3 text-xl font-semibold text-slate-950 dark:text-white">{product.title}</h3>
+          <div className="min-w-0">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">{product.subtitle}</p>
+            <h3 className="mt-2 line-clamp-2 text-lg font-semibold leading-snug text-slate-950 dark:text-white">{product.title}</h3>
           </div>
           {product.badge ? <Badge>{product.badge}</Badge> : null}
         </div>
-        <div className="mt-5 flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-3">
           <div className="space-y-1">
-            <p className="text-2xl font-semibold text-slate-950 dark:text-white">₹{(product.price / 100).toFixed(2)}</p>
+            <p className="text-xl font-semibold text-slate-950 dark:text-white">{formatINR(product.price)}</p>
             <p className="text-sm text-slate-500 dark:text-slate-400">{product.rating.toFixed(1)} ★</p>
           </div>
-          <Button as="a" href={`/products/${product.slug}`} variant="secondary" size="sm">
+          <Button as="a" href={`/products/${product.slug}`} variant="secondary" size="sm" className="shrink-0">
             View
           </Button>
         </div>
+        <p className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-600 dark:bg-slate-900 dark:text-slate-300">
+          {product.techSignal}
+        </p>
+        <Button as="a" href={`/products/${product.slug}`} size="sm" className="w-full">
+          Add to Cart
+        </Button>
       </CardBody>
     </Card>
   );
@@ -111,3 +123,5 @@ function HeartIcon({ filled }: { filled: boolean }) {
     </svg>
   );
 }
+
+

@@ -15,7 +15,7 @@ const bodySchema = z.object({
 
 export async function POST(req: Request, context: { params: Promise<Record<string, string>> }) {
   try {
-    const { productId } = await context.params;
+    const { id: productId } = await context.params;
     const parsed = bodySchema.parse(await req.json());
     const { title, price, sku, attributes, images, inventory } = parsed;
 

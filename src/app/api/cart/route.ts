@@ -3,6 +3,22 @@ import { getAuth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { ensureGuestCartToken, getGuestCartCookieOptions, getResolvedCart, mergeGuestCartIntoUserCart } from '@/lib/cart';
 
+function emptyCartResponse(guestToken?: string | null) {
+  const response = NextResponse.json({
+    ok: true,
+    data: {
+      id: null,
+      token: guestToken ?? null,
+      userId: null,
+      items: [],
+      subtotal: 0,
+      itemCount: 0,
+    },
+  });
+  if (guestToken) response.cookies.set('bytebazaar_guest_cart', guestToken, getGuestCartCookieOptions());
+  return response;
+}
+
 export async function GET(req: Request) {
   try {
     const auth = getAuth(req as Parameters<typeof getAuth>[0]);
@@ -11,11 +27,9 @@ export async function GET(req: Request) {
       await mergeGuestCartIntoUserCart(guestToken, auth.userId).catch(() => null);
       return NextResponse.json({ ok: true, data: await getResolvedCart(auth.userId, guestToken) });
     }
-    const response = NextResponse.json({ ok: true, data: await getResolvedCart(null, guestToken) });
-    response.cookies.set('bytebazaar_guest_cart', guestToken, getGuestCartCookieOptions());
-    return response;
+    return emptyCartResponse(guestToken);
   } catch {
-    return NextResponse.json({ ok: false, error: 'Unable to load cart' }, { status: 500 });
+    return emptyCartResponse(null);
   }
 }
 

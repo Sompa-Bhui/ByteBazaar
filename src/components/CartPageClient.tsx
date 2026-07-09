@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useCartWishlist } from './cart-wishlist-context';
+import { MarketplaceImage } from './MarketplaceImage';
+import { formatINR } from '@/lib/format';
 
 type CartItem = {
   id: string;
@@ -100,7 +102,9 @@ export function CartPageClient() {
       <div className="space-y-4">
         {items.map((item) => (
           <article key={item.id} className="flex gap-4 rounded-3xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-            <img src={item.product.image ?? ''} alt={item.product.title} className="h-24 w-24 rounded-2xl object-cover" />
+            <div className="relative h-24 w-24 overflow-hidden rounded-2xl bg-slate-100">
+              <MarketplaceImage src={item.product.image ?? undefined} alt={item.product.title} fill className="object-cover" sizes="96px" />
+            </div>
             <div className="flex-1">
               <h3 className="font-semibold text-slate-950 dark:text-white">{item.product.title}</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400">{item.variant.title}</p>
@@ -116,7 +120,7 @@ export function CartPageClient() {
       </div>
       <aside className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
         <h2 className="text-xl font-semibold text-slate-950 dark:text-white">Order Summary</h2>
-        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Subtotal: ₹{(subtotal / 100).toFixed(2)}</p>
+        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Subtotal: {formatINR(subtotal)}</p>
         <div className="mt-6 flex flex-col gap-3">
           <Link href="/products" className="inline-flex rounded-full bg-slate-900 px-4 py-2 text-white dark:bg-white dark:text-slate-950">Continue Shopping</Link>
           <button onClick={clearCart} className="inline-flex rounded-full border px-4 py-2 text-sm">Clear Cart</button>

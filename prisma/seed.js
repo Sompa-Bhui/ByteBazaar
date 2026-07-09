@@ -1,59 +1,118 @@
-// Lightweight seed scaffold for ByteBazaar
-// - If DATABASE_URL is not set, this writes `prisma/seed-data.json` (already present)
-// - If DATABASE_URL is set and Prisma client is available, it will attempt to insert minimal data
-
 const fs = require('fs');
 const path = require('path');
 
-const seedDataPath = path.join(__dirname, 'seed-data.json');
-const hasDb = Boolean(process.env.DATABASE_URL);
+async function main() {
+  const seedPath = path.join(__dirname, 'seed-data.json');
+  const raw = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
 
-async function run() {
-  if (!hasDb) {
-    console.log('No DATABASE_URL configured. Development seed data is available at prisma/seed-data.json');
-    console.log('When a database is available, set DATABASE_URL and run this script to seed the DB.');
-    const data = fs.readFileSync(seedDataPath, 'utf-8');
-    console.log('Sample data preview:\n', data);
+  if (!process.env.DATABASE_URL) {
+    console.log('DATABASE_URL is missing. Seed data is available in prisma/seed-data.json.');
     return;
   }
 
-  let PrismaClient;
-  try {
-    PrismaClient = require('@prisma/client').PrismaClient;
-  } catch (e) {
-    console.error('Could not load @prisma/client. Run `pnpm prisma generate` first.');
-    return;
-  }
-
+  const { PrismaClient } = require('@prisma/client');
   const prisma = new PrismaClient();
-  const raw = JSON.parse(fs.readFileSync(seedDataPath, 'utf-8'));
 
   try {
-    console.log('Seeding categories...');
-    for (const c of raw.categories) {
-      await prisma.category.upsert({ where: { slug: c.slug }, update: {}, create: { id: c.id, name: c.name, slug: c.slug, description: c.description } });
+    for (const category of raw.categories) {
+      await prisma.category.upsert({
+        where: { slug: category.slug },
+        update: {
+          name: category.name,
+          description: category.description,
+        },
+        create: category,
+      });
     }
 
-    console.log('Seeding brands...');
-    for (const b of raw.brands) {
-      await prisma.brand.upsert({ where: { slug: b.slug }, update: {}, create: { id: b.id, name: b.name, slug: b.slug, website: b.website } });
+    for (const brand of raw.brands) {
+      await prisma.brand.upsert({
+        where: { slug: brand.slug },
+        update: {
+          name: brand.name,
+          website: brand.website,
+        },
+        create: brand,
+      });
     }
 
-    console.log('Seeding products and variants...');
-    for (const p of raw.products) {
-      await prisma.product.upsert({ where: { slug: p.slug }, update: {}, create: { id: p.id, title: p.title, slug: p.slug, shortDesc: p.shortDesc, price: p.price, brandId: p.brandId } });
+    for (const product of raw.products) {
+      await prisma.product.upsert({
+        where: { slug: product.slug },
+        update: {
+          title: product.title,
+          shortDesc: product.shortDesc,
+          description: product.description,
+          price: product.price,
+          brandId: product.brandId,
+          isPublished: product.isPublished,
+        },
+        create: product,
+      });
     }
 
-    for (const v of raw.variants) {
-      await prisma.productVariant.upsert({ where: { sku: v.sku }, update: {}, create: { id: v.id, productId: v.productId, title: v.title, sku: v.sku, price: v.price } });
+    for (const link of raw.productCategories) {
+      await prisma.productCategory.upsert({
+        where: { id: link.id },
+        update: {
+          productId: link.productId,
+          categoryId: link.categoryId,
+        },
+        create: link,
+      });
+    }
+
+    for (const image of raw.productImages) {
+      await prisma.productImage.upsert({
+        where: { id: image.id },
+        update: {
+          productId: image.productId,
+          url: image.url,
+          altText: image.altText,
+          position: image.position,
+        },
+        create: image,
+      });
+    }
+
+    for (const variant of raw.variants) {
+      await prisma.productVariant.upsert({
+        where: { sku: variant.sku },
+        update: {
+          productId: variant.productId,
+          title: variant.title,
+          price: variant.price,
+        },
+        create: {
+          id: variant.id,
+          productId: variant.productId,
+          title: variant.title,
+          sku: variant.sku,
+          price: variant.price,
+        },
+      });
+    }
+
+    for (const inventory of raw.inventories) {
+      await prisma.inventory.upsert({
+        where: { variantId: inventory.variantId },
+        update: {
+          sku: inventory.sku,
+          quantityOnHand: inventory.quantityOnHand,
+          safetyStock: inventory.safetyStock,
+          location: inventory.location,
+        },
+        create: inventory,
+      });
     }
 
     console.log('Seed complete.');
-  } catch (e) {
-    console.error('Seeding failed:', e);
   } finally {
     await prisma.$disconnect();
   }
 }
 
-run();
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

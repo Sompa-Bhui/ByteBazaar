@@ -33,7 +33,7 @@ export function Button<T extends ElementType = 'button'>({
   return (
     <Component
       className={clsx(
-        'inline-flex items-center justify-center rounded-full font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 dark:focus-visible:ring-white',
+        'inline-flex items-center justify-center rounded-full font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45 disabled:shadow-none disabled:hover:bg-inherit dark:focus-visible:ring-white dark:disabled:opacity-40',
         variantStyles[variant],
         sizeStyles[size],
         className

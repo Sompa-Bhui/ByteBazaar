@@ -170,6 +170,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                     price: product.price,
                     image: product.image,
                     rating: 4.7,
+                    techSignal: getTechSignal(product.slug),
                   }}
                 />
               ))
@@ -201,4 +202,23 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       </div>
     </div>
   );
+}
+
+function getTechSignal(slug: string) {
+  switch (slug) {
+    case 'byteview-34-ultrawide':
+      return '4K 144Hz';
+    case 'byteforge-developer-workspace-kit':
+      return 'Build Lab ready';
+    case 'bytedock-12-in-1':
+      return '140W PD';
+    case 'bytekeys-pro-75':
+      return '75% Mechanical';
+    case 'bytemouse-ergo-x':
+      return 'macOS + Windows';
+    case 'bytelight-monitor-bar':
+      return 'USB-C Powered';
+    default:
+      return 'Build Lab ready';
+  }
 }

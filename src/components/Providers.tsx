@@ -13,9 +13,9 @@ export default function Providers({ children }: { children: ReactNode }) {
 
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-  const content = <CartWishlistProvider>{children}</CartWishlistProvider>;
-
-  if (!publishableKey) return content;
-
-  return <ClerkProvider publishableKey={publishableKey}>{content}</ClerkProvider>;
+  return (
+    <ClerkProvider publishableKey={publishableKey}>
+      <CartWishlistProvider>{children}</CartWishlistProvider>
+    </ClerkProvider>
+  );
 }
