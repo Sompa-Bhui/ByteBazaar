@@ -15,7 +15,13 @@ export async function GET(req: Request) {
   const cart = await resolveCheckoutCart(dbUser.id, guestToken);
   if (!cart || cart.items.length === 0) return NextResponse.json({ ok: true, data: { requiresAuth: false, cartId: null, items: [], subtotal: 0, shipping: 0, tax: 0, total: 0, itemCount: 0, addresses: [], selectedAddressId: null } });
 
-  const items = [];
+  const items: Array<{
+    id: string;
+    variantId: string;
+    quantity: number;
+    product: { id: string; title: string; slug: string; price: number; image: string | null };
+    variant: { id: string; title: string; price: number; sku: string | null };
+  }> = [];
   let subtotal = 0;
   for (const item of cart.items) {
     const variant = await prisma.productVariant.findFirst({

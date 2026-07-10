@@ -42,7 +42,14 @@ export async function POST(req: Request) {
     if (!refreshed || refreshed.items.length === 0) throw new Error('EMPTY_CART');
 
     let subtotal = 0;
-    const snapshots = [];
+    const snapshots: Array<{
+      variantId: string;
+      title: string;
+      sku: string | null;
+      unitPrice: number;
+      quantity: number;
+      totalPrice: number;
+    }> = [];
     for (const item of refreshed.items) {
       const variant = item.variant;
       if (!variant || variant.product.deletedAt || !variant.product.isPublished) throw new Error('INVALID_ITEM');
