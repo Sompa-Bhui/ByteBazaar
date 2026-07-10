@@ -3,7 +3,13 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 export default async function InventoryPage() {
-  const variants = await prisma.productVariant.findMany({ include: { product: true, inventory: true }, orderBy: { updatedAt: 'desc' }, take: 200 });
+  const variants = (await prisma.productVariant.findMany({ include: { product: true, inventory: true }, orderBy: { updatedAt: 'desc' }, take: 200 })) as Array<{
+    id: string;
+    title: string;
+    sku: string | null;
+    product: { title: string };
+    inventory: { quantityOnHand: number; safetyStock: number; location: string | null } | null;
+  }>;
 
   return (
     <div>

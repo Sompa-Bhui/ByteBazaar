@@ -5,7 +5,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function VariantsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: productId } = await params;
-  const variants = await prisma.productVariant.findMany({ where: { productId }, include: { inventory: true }, orderBy: { createdAt: 'desc' } });
+  const variants = (await prisma.productVariant.findMany({ where: { productId }, include: { inventory: true }, orderBy: { createdAt: 'desc' } })) as Array<{
+    id: string;
+    title: string;
+    sku: string | null;
+    price: number;
+    inventory: { quantityOnHand: number; safetyStock: number } | null;
+  }>;
 
   return (
     <div>

@@ -4,7 +4,15 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 export default async function ProductsPage() {
-  const products = await prisma.product.findMany({ take: 50, orderBy: { createdAt: 'desc' }, include: { brand: true, images: true, variants: true } });
+  const products = (await prisma.product.findMany({ take: 50, orderBy: { createdAt: 'desc' }, include: { brand: true, images: true, variants: true } })) as Array<{
+    id: string;
+    title: string;
+    sku: string | null;
+    price: number;
+    isPublished: boolean;
+    brand: { name: string } | null;
+    variants: Array<{ sku: string | null }>;
+  }>;
 
   return (
     <div>

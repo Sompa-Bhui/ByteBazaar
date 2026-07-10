@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
@@ -31,7 +30,7 @@ export async function PATCH(req: Request, context: { params: Promise<Record<stri
       if (exists && exists.id !== id) return NextResponse.json({ error: 'SKU already exists' }, { status: 400 });
     }
 
-    const updated = await prisma.productVariant.update({ where: { id }, data: { title, price, sku, attributes: attributes as Prisma.InputJsonValue } });
+    const updated = await prisma.productVariant.update({ where: { id }, data: { title, price, sku, attributes: attributes as never } });
 
     if (inventory) {
       const inv = await prisma.inventory.findUnique({ where: { variantId: id } });

@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { generateSKU } from '@/lib/sku';
@@ -40,7 +39,7 @@ export async function POST(req: Request, context: { params: Promise<Record<strin
         title,
         price,
         sku: finalSku,
-        attributes: attributes ? (attributes as Prisma.InputJsonValue) : undefined,
+        attributes: attributes ? (attributes as never) : undefined,
         inventory: inventory ? { create: { quantityOnHand: inventory.quantityOnHand ?? 0, safetyStock: inventory.safetyStock ?? 0, location: inventory.location } } : undefined,
         images: images ? { create: images.map((img, idx: number) => ({ url: img.url, altText: img.altText, position: idx, productId })) } : undefined,
       },

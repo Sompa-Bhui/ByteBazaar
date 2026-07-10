@@ -8,7 +8,17 @@ export const dynamic = 'force-dynamic';
 export default async function AdminCouponsPage() {
   const adminId = await getAdminUserId({ headers: headers() } as never);
   if (!adminId) redirect('/sign-in');
-  const coupons = await prisma.coupon.findMany({ orderBy: { createdAt: 'desc' } });
+  const coupons = (await prisma.coupon.findMany({ orderBy: { createdAt: 'desc' } })) as Array<{
+    id: string;
+    code: string;
+    discountType: string;
+    amount: number;
+    startsAt: Date | null;
+    expiresAt: Date | null;
+    usedCount: number;
+    usageLimit: number | null;
+    active: boolean;
+  }>;
   return (
     <main className="space-y-6">
       <div>
@@ -55,4 +65,3 @@ export default async function AdminCouponsPage() {
     </main>
   );
 }
-

@@ -14,7 +14,20 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     include: { user: true, items: true, payments: { orderBy: { createdAt: 'desc' } }, shippingAddress: true, billingAddress: true },
-  });
+  }) as
+    | {
+        id: string;
+        updatedAt: Date;
+        createdAt: Date;
+        total: number;
+        status: string;
+        user: { name: string | null; email: string | null };
+        items: Array<{ id: string; title: string; sku: string | null; quantity: number; unitPrice: number; totalPrice: number }>;
+        payments: Array<{ status: string; provider: string; providerOrderId: string | null; providerId: string | null }>;
+        shippingAddress: { fullName: string; line1: string; line2: string | null; city: string; state: string | null; postalCode: string; country: string } | null;
+        billingAddress: unknown;
+      }
+    | null;
   if (!order) notFound();
   const latestPayment = order.payments[0] ?? null;
   const validStatuses = order.status === 'PENDING' ? ['PROCESSING', 'CANCELLED'] : order.status === 'PROCESSING' ? ['FULFILLED', 'CANCELLED'] : [];
@@ -97,4 +110,3 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
     </main>
   );
 }
-

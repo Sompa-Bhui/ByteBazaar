@@ -15,13 +15,22 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   if (params.orderStatus) where.status = params.orderStatus;
   if (params.paymentStatus) where.payments = { some: { status: params.paymentStatus } };
   if (params.q) where.OR = [{ id: { contains: params.q, mode: 'insensitive' } }, { user: { email: { contains: params.q, mode: 'insensitive' } } }];
-  const orders = await prisma.order.findMany({
+  const orders = (await prisma.order.findMany({
     where,
     include: { user: true, items: true, payments: { orderBy: { createdAt: 'desc' }, take: 1 } },
     orderBy: { createdAt: params.sort === 'oldest' ? 'asc' : 'desc' },
     skip: (page - 1) * 20,
     take: 20,
-  });
+  })) as Array<{
+    id: string;
+    createdAt: Date;
+    total: number;
+    status: string;
+    userId: string;
+    user: { name: string | null; email: string | null };
+    items: Array<{ quantity: number }>;
+    payments: Array<{ status: string }>;
+  }>;
   const total = await prisma.order.count({ where });
   return (
     <main className="space-y-6">
@@ -69,4 +78,3 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     </main>
   );
 }
-

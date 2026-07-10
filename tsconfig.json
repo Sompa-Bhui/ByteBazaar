@@ -16,6 +16,7 @@
     "jsx": "preserve",
     "noEmit": true,
     "strict": true,
+    "noImplicitAny": false,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
